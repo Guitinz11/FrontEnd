@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - RaceFlow</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container-dashboard">
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark">
+            <div class="navbar-container">
+                <div class="navbar-logo">
+                    <span class="logo-icon">🏁</span>
+                    <span class="logo-text">RaceFlow</span>
+                </div>
+                <div class="navbar-links">
+                    <a href="dashboard.html" class="nav-link">Dashboard</a>
+                    <a href="admin.html" class="nav-link active">Admin</a>
+                    <a href="index.html" class="nav-link" onclick="logout(); return false;">Sair</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Administração</h3>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="#corredores" class="menu-item active" data-section="corredores">
+                    <span class="menu-icon">🏎️</span>
+                    <span class="menu-text">Corredores</span>
+                </a>
+                <a href="#usuarios" class="menu-item" data-section="usuarios">
+                    <span class="menu-icon">👥</span>
+                    <span class="menu-text">Usuários</span>
+                </a>
+                <a href="#voltas" class="menu-item" data-section="voltas">
+                    <span class="menu-icon">⚡</span>
+                    <span class="menu-text">Voltas</span>
+                </a>
+                <a href="#logs" class="menu-item" data-section="logs">
+                    <span class="menu-icon">📋</span>
+                    <span class="menu-text">Logs</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div class="header-info">
+                    <h1>Painel Administrativo</h1>
+                    <p>Gerencie todos os dados do sistema RaceFlow</p>
+                </div>
+            </div>
+
+            <!-- Section: Corredores Admin -->
+            <section id="corredores" class="dashboard-section active">
+                <div class="section-header">
+                    <h2>Gerenciamento de Corredores</h2>
+                    <button class="btn btn-primary" onclick="openAddCorredorModal()">+ Novo Corredor</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Lista de Corredores</h3>
+                        <input type="search" placeholder="Buscar corredor..." id="searchCorredores" class="search-input">
+                    </div>
+                    <div class="card-body">
+                        <table class="admin-table data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Turma</th>
+                                    <th>Equipe</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminCorredoresBody">
+                                <!-- Preenchido por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Usuários Admin -->
+            <section id="usuarios" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Gerenciamento de Usuários</h2>
+                    <button class="btn btn-primary" onclick="openAddUsuarioModal()">+ Novo Usuário</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Lista de Usuários</h3>
+                        <input type="search" placeholder="Buscar usuário..." id="searchUsuarios" class="search-input">
+                    </div>
+                    <div class="card-body">
+                        <table class="admin-table data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Tipo</th>
+                                    <th>Data Cadastro</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUsuariosBody">
+                                <!-- Preenchido por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Voltas Admin -->
+            <section id="voltas" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Histórico de Voltas</h2>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Todas as Voltas Registradas</h3>
+                        <div class="header-actions">
+                            <input type="search" placeholder="Buscar volta..." id="searchVoltas" class="search-input">
+                            <button class="btn btn-secondary" onclick="exportarVoltas()">📥 Exportar</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="admin-table data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Corredor</th>
+                                    <th>Tempo (s)</th>
+                                    <th>Data/Hora</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminVoltasBody">
+                                <!-- Preenchido por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Logs -->
+            <section id="logs" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Logs do Sistema</h2>
+                    <button class="btn btn-secondary" onclick="limparLogs()">🗑️ Limpar Logs</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div id="logsContainer" class="logs-container">
+                            <!-- Preenchido por JS -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Corredor Modal -->
+    <div id="adminCorredorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="corredorModalTitle">Adicionar Corredor</h2>
+                <button class="modal-close" onclick="closeCorredorModal()">&times;</button>
+            </div>
+            <form id="adminCorredorForm" class="modal-form">
+                <div class="form-group">
+                    <label for="adminCorredorNome">Nome Completo *</label>
+                    <input type="text" id="adminCorredorNome" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminCorredorEmail">Email *</label>
+                    <input type="email" id="adminCorredorEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminCorredorSenha">Senha *</label>
+                    <input type="password" id="adminCorredorSenha" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="adminCorredorTurma">Turma *</label>
+                        <select id="adminCorredorTurma" required>
+                            <option value="">Selecione</option>
+                            <option value="Turma A">Turma A</option>
+                            <option value="Turma B">Turma B</option>
+                            <option value="Turma C">Turma C</option>
+                            <option value="Turma D">Turma D</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminCorredorEquipe">Equipe *</label>
+                        <select id="adminCorredorEquipe" required>
+                            <option value="">Selecione</option>
+                            <option value="Red Racing">Red Racing</option>
+                            <option value="Blue Velocity">Blue Velocity</option>
+                            <option value="Silver Speed">Silver Speed</option>
+                            <option value="Gold Thunder">Gold Thunder</option>
+                            <option value="Purple Force">Purple Force</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeCorredorModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Usuario Modal -->
+    <div id="adminUsuarioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="usuarioModalTitle">Adicionar Usuário</h2>
+                <button class="modal-close" onclick="closeUsuarioModal()">&times;</button>
+            </div>
+            <form id="adminUsuarioForm" class="modal-form">
+                <div class="form-group">
+                    <label for="adminUsuarioNome">Nome Completo *</label>
+                    <input type="text" id="adminUsuarioNome" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminUsuarioEmail">Email *</label>
+                    <input type="email" id="adminUsuarioEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminUsuarioSenha">Senha *</label>
+                    <input type="password" id="adminUsuarioSenha" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminUsuarioTipo">Tipo *</label>
+                    <select id="adminUsuarioTipo" required>
+                        <option value="">Selecione</option>
+                        <option value="Admin">Administrador</option>
+                        <option value="Gerenciador">Gerenciador</option>
+                        <option value="Usuário">Usuário</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeUsuarioModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Inicializar Admin
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // Verificar se é admin
+                const userStr = localStorage.getItem('userLoggedIn');
+                if (!userStr) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                const user = JSON.parse(userStr);
+                if (!user.isAdmin) {
+                    alert('Acesso negado! Apenas administradores podem acessar esta página.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+                
+                loadAdminData();
+                setupAdminNavigation();
+                setupSearch();
+            } catch (error) {
+                console.error('Erro ao inicializar admin:', error);
+                alert('Erro ao carregar painel admin: ' + error.message);
+            }
+        });
+
+        function setupAdminNavigation() {
+            try {
+                const menuItems = document.querySelectorAll('.menu-item');
+                if (menuItems.length === 0) {
+                    console.warn('Nenhum menu-item encontrado');
+                    return;
+                }
+
+                menuItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const section = this.dataset.section;
+                        if (section) {
+                            const sections = document.querySelectorAll('.dashboard-section');
+                            sections.forEach(s => s.classList.remove('active'));
+                            
+                            const targetSection = document.getElementById(section);
+                            if (targetSection) {
+                                targetSection.classList.add('active');
+                            }
+                            
+                            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                            this.classList.add('active');
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Erro ao setupar navegação admin:', error);
+            }
+        }
+
+        function loadAdminData() {
+            try {
+                const corredores = generateMockCorredores();
+                const usuarios = generateMockUsuarios();
+                const voltas = generateMockVoltas();
+
+                populateAdminCorredores(corredores);
+                populateAdminUsuarios(usuarios);
+                populateAdminVoltas(voltas);
+                loadLogs();
+                
+                // Esconder cards vazios
+                document.querySelectorAll('.card').forEach(card => {
+                    const tbody = card.querySelector('tbody');
+                    if (tbody && tbody.children.length === 0) {
+                        card.style.display = 'none';
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao carregar dados admin:', error);
+            }
+        }
+
+        function generateMockCorredores() {
+            return [];
+        }
+
+        function generateMockUsuarios() {
+            return [];
+        }
+
+        function generateMockVoltas() {
+            return [];
+        }
+
+        function populateAdminCorredores(corredores) {
+            try {
+                const tbody = document.getElementById('adminCorredoresBody');
+                if (!tbody) {
+                    console.warn('Elemento adminCorredoresBody não encontrado');
+                    return;
+                }
+                tbody.innerHTML = corredores.map(c => `
+                    <tr class="table-row">
+                        <td>${c.id}</td>
+                        <td><strong>${c.nome}</strong></td>
+                        <td>${c.email}</td>
+                        <td>${c.turma}</td>
+                        <td><span class="badge">${c.equipe}</span></td>
+                        <td><span class="badge ${c.status === 'Ativo' ? 'badge-success' : 'badge-warning'}">${c.status}</span></td>
+                        <td class="actions-cell">
+                            <button class="btn-icon" title="Editar" onclick="editarCorredor(${c.id})">✏️</button>
+                            <button class="btn-icon btn-danger" title="Deletar" onclick="deletarCorredor(${c.id})">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao popular tabela de corredores admin:', error);
+            }
+        }
+
+        function populateAdminUsuarios(usuarios) {
+            try {
+                const tbody = document.getElementById('adminUsuariosBody');
+                if (!tbody) {
+                    console.warn('Elemento adminUsuariosBody não encontrado');
+                    return;
+                }
+                tbody.innerHTML = usuarios.map(u => `
+                    <tr class="table-row">
+                        <td>${u.id}</td>
+                        <td><strong>${u.nome}</strong></td>
+                        <td>${u.email}</td>
+                        <td><span class="badge badge-info">${u.tipo}</span></td>
+                        <td>${u.dataCadastro}</td>
+                        <td><span class="badge badge-success">${u.status}</span></td>
+                        <td class="actions-cell">
+                            <button class="btn-icon" title="Editar" onclick="editarUsuario(${u.id})">✏️</button>
+                            <button class="btn-icon btn-danger" title="Deletar" onclick="deletarUsuario(${u.id})">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao popular tabela de usuários admin:', error);
+            }
+        }
+
+        function populateAdminVoltas(voltas) {
+            try {
+                const tbody = document.getElementById('adminVoltasBody');
+                if (!tbody) {
+                    console.warn('Elemento adminVoltasBody não encontrado');
+                    return;
+                }
+                tbody.innerHTML = voltas.map(v => `
+                    <tr class="table-row">
+                        <td>${v.id}</td>
+                        <td>${v.corredorNome}</td>
+                        <td class="highlight"><strong>${v.tempo}s</strong></td>
+                        <td>${v.dataHora}</td>
+                        <td><span class="badge badge-success">${v.status}</span></td>
+                        <td class="actions-cell">
+                            <button class="btn-icon btn-danger" title="Deletar" onclick="deletarVolta(${v.id})">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao popular tabela de voltas admin:', error);
+            }
+        }
+
+        function loadLogs() {
+            try {
+                const logs = [
+                    { tipo: 'info', mensagem: 'Sistema iniciado com sucesso', data: '2026-04-08 10:00:00' },
+                    { tipo: 'success', mensagem: 'Corredor João Silva realizou uma volta - 45.23s', data: '2026-04-08 10:05:23' },
+                    { tipo: 'success', mensagem: 'Corredor Maria Santos realizou uma volta - 44.87s', data: '2026-04-08 10:08:15' },
+                    { tipo: 'warning', mensagem: 'Login falhado para admin@raceflow.com (tentativa 1)', data: '2026-04-08 10:12:30' },
+                    { tipo: 'success', mensagem: 'Admin System efetuou login com sucesso', data: '2026-04-08 10:12:45' },
+                    { tipo: 'info', mensagem: 'Novo corredor adicionado: Rafael Martinez', data: '2026-04-08 10:20:10' },
+                    { tipo: 'success', mensagem: 'Dados do sistema exportados', data: '2026-04-08 10:25:00' },
+                ];
+
+                const container = document.getElementById('logsContainer');
+                if (container) {
+                    container.innerHTML = logs.map(log => `
+                        <div class="log-entry log-${log.tipo}">
+                            <span class="log-time">${log.data}</span>
+                            <span class="log-type">${log.tipo.toUpperCase()}</span>
+                            <span class="log-message">${log.mensagem}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar logs:', error);
+            }
+        }
+
+        function setupSearch() {
+            try {
+                const searchCorredores = document.getElementById('searchCorredores');
+                const searchUsuarios = document.getElementById('searchUsuarios');
+                const searchVoltas = document.getElementById('searchVoltas');
+
+                if (searchCorredores) {
+                    searchCorredores.addEventListener('input', function(e) {
+                        filterTable('adminCorredoresBody', e.target.value);
+                    });
+                }
+                
+                if (searchUsuarios) {
+                    searchUsuarios.addEventListener('input', function(e) {
+                        filterTable('adminUsuariosBody', e.target.value);
+                    });
+                }
+                
+                if (searchVoltas) {
+                    searchVoltas.addEventListener('input', function(e) {
+                        filterTable('adminVoltasBody', e.target.value);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao setupar busca:', error);
+            }
+        }
+
+        function filterTable(tableBodyId, searchTerm) {
+            try {
+                const rows = document.querySelectorAll(`#${tableBodyId} tr`);
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm.toLowerCase()) ? '' : 'none';
+                });
+            } catch (error) {
+                console.error('Erro ao filtrar tabela:', error);
+            }
+        }
+
+        function openAddCorredorModal() {
+            try {
+                const title = document.getElementById('corredorModalTitle');
+                const form = document.getElementById('adminCorredorForm');
+                const modal = document.getElementById('adminCorredorModal');
+                
+                if (title) title.textContent = 'Adicionar Novo Corredor';
+                if (form) form.reset();
+                if (modal) modal.classList.add('active');
+            } catch (error) {
+                console.error('Erro ao abrir modal de corredor:', error);
+            }
+        }
+
+        function closeCorredorModal() {
+            try {
+                const modal = document.getElementById('adminCorredorModal');
+                if (modal) modal.classList.remove('active');
+            } catch (error) {
+                console.error('Erro ao fechar modal de corredor:', error);
+            }
+        }
+
+        function openAddUsuarioModal() {
+            try {
+                const title = document.getElementById('usuarioModalTitle');
+                const form = document.getElementById('adminUsuarioForm');
+                const modal = document.getElementById('adminUsuarioModal');
+                
+                if (title) title.textContent = 'Adicionar Novo Usuário';
+                if (form) form.reset();
+                if (modal) modal.classList.add('active');
+            } catch (error) {
+                console.error('Erro ao abrir modal de usuário:', error);
+            }
+        }
+
+        function closeUsuarioModal() {
+            try {
+                const modal = document.getElementById('adminUsuarioModal');
+                if (modal) modal.classList.remove('active');
+            } catch (error) {
+                console.error('Erro ao fechar modal de usuário:', error);
+            }
+        }
+
+        function editarCorredor(id) {
+            try {
+                alert(`Editar corredor #${id} - (Integração com backend aqui)`);
+            } catch (error) {
+                console.error('Erro ao editar corredor:', error);
+            }
+        }
+
+        function deletarCorredor(id) {
+            try {
+                if (confirm(`Tem certeza que deseja deletar o corredor #${id}?`)) {
+                    alert('Corredor deletado! (Integração com backend aqui)');
+                }
+            } catch (error) {
+                console.error('Erro ao deletar corredor:', error);
+            }
+        }
+
+        function editarUsuario(id) {
+            try {
+                alert(`Editar usuário #${id} - (Integração com backend aqui)`);
+            } catch (error) {
+                console.error('Erro ao editar usuário:', error);
+            }
+        }
+
+        function deletarUsuario(id) {
+            try {
+                if (confirm(`Tem certeza que deseja deletar o usuário #${id}?`)) {
+                    alert('Usuário deletado! (Integração com backend aqui)');
+                }
+            } catch (error) {
+                console.error('Erro ao deletar usuário:', error);
+            }
+        }
+
+        function deletarVolta(id) {
+            try {
+                if (confirm(`Tem certeza que deseja deletar a volta #${id}?`)) {
+                    alert('Volta deletada! (Integração com backend aqui)');
+                }
+            } catch (error) {
+                console.error('Erro ao deletar volta:', error);
+            }
+        }
+
+        function exportarVoltas() {
+            try {
+                alert('Exportando dados... (Integração com backend aqui)');
+            } catch (error) {
+                console.error('Erro ao exportar voltas:', error);
+            }
+        }
+
+        function limparLogs() {
+            try {
+                if (confirm('Tem certeza que deseja limpar todos os logs?')) {
+                    const container = document.getElementById('logsContainer');
+                    if (container) {
+                        container.innerHTML = '<p style="text-align: center; color: #999;">Nenhum log disponível</p>';
+                    }
+                    alert('Logs limpos com sucesso!');
+                }
+            } catch (error) {
+                console.error('Erro ao limpar logs:', error);
+            }
+        }
+
+        function logout() {
+            try {
+                localStorage.removeItem('userLoggedIn');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+                window.location.href = 'index.html';
+            }
+        }
+
+        const adminCorredorForm = document.getElementById('adminCorredorForm');
+        if (adminCorredorForm) {
+            adminCorredorForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                try {
+                    const nome = document.getElementById('adminCorredorNome').value;
+                    alert(`Corredor "${nome}" adicionado com sucesso! (Integração com backend aqui)`);
+                    closeCorredorModal();
+                    loadAdminData();
+                } catch (error) {
+                    console.error('Erro ao adicionar corredor:', error);
+                }
+            });
+        }
+
+        const adminUsuarioForm = document.getElementById('adminUsuarioForm');
+        if (adminUsuarioForm) {
+            adminUsuarioForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                try {
+                    const nome = document.getElementById('adminUsuarioNome').value;
+                    alert(`Usuário "${nome}" adicionado com sucesso! (Integração com backend aqui)`);
+                    closeUsuarioModal();
+                    loadAdminData();
+                } catch (error) {
+                    console.error('Erro ao adicionar usuário:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

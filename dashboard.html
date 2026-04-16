@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - RaceFlow</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        #canvas-gradiente {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+        }
+        
+        body {
+            background: #0a0e27;
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas para Gradiente Líquido -->
+    <div id="canvas-gradiente"></div>
+
+    <div class="container-dashboard">
+        <!-- ...existing code... -->
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark">
+            <div class="navbar-container">
+                <div class="navbar-logo">
+                    <span class="logo-icon">🏁</span>
+                    <span class="logo-text">RaceFlow</span>
+                </div>
+                <div class="navbar-links">
+                    <a href="dashboard.html" class="nav-link active">Dashboard</a>
+                    <a href="admin.html" class="nav-link" id="adminLink" style="display: none;">Admin</a>
+                    <a href="index.html" class="nav-link" onclick="logout(); return false;">Sair</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h3>Menu</h3>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="#inicio" class="menu-item active" data-section="inicio">
+                    <span class="menu-icon">🏠</span>
+                    <span class="menu-text">Início</span>
+                </a>
+                <a href="#corredores" class="menu-item" data-section="corredores">
+                    <span class="menu-icon">🏎️</span>
+                    <span class="menu-text">Corredores</span>
+                </a>
+                <a href="#usuarios" class="menu-item" data-section="usuarios">
+                    <span class="menu-icon">👥</span>
+                    <span class="menu-text">Usuários</span>
+                </a>
+                <a href="#ranking" class="menu-item" data-section="ranking">
+                    <span class="menu-icon">🏆</span>
+                    <span class="menu-text">Rankings</span>
+                </a>
+                <a href="#pista" class="menu-item" data-section="pista">
+                    <span class="menu-icon">🛣️</span>
+                    <span class="menu-text">Pista</span>
+                </a>
+                <a href="#voltas" class="menu-item" data-section="voltas">
+                    <span class="menu-icon">⚡</span>
+                    <span class="menu-text">Voltas</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <!-- Header Welcome -->
+            <div class="dashboard-header">
+                <div class="header-info">
+                    <h1 id="welcomeTitle">Bem-vindo ao Dashboard</h1>
+                    <p id="headerDate"></p>
+                </div>
+                <div class="header-user">
+                    <span id="userNameDisplay"></span>
+                    <span class="user-badge" id="userTypeDisplay"></span>
+                </div>
+            </div>
+
+            <!-- Section: Dashboard Início -->
+            <section id="inicio" class="dashboard-section active">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🏎️</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total de Corredores</span>
+                            <span class="stat-value" id="totalCorredores">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">👤</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total de Usuários</span>
+                            <span class="stat-value" id="totalUsuarios">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Total de Voltas</span>
+                            <span class="stat-value" id="totalVoltas">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏆</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Melhor Volta Geral</span>
+                            <span class="stat-value" id="melhorVoltaGeral">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Performers -->
+                <div class="dashboard-grid">
+                    <!-- Top 5 Melhores Voltas -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🏆 Top 5 Melhores Voltas</h2>
+                        </div>
+                        <div class="card-body">
+                            <table class="ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-col">Pos</th>
+                                        <th>Corredor</th>
+                                        <th>Tempo</th>
+                                        <th>Equipe</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topVoltasBody">
+                                    <!-- Será preenchido por JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Ranking por Equipe -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🎯 Ranking por Equipe</h2>
+                        </div>
+                        <div class="card-body">
+                            <table class="ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-col">Pos</th>
+                                        <th>Equipe</th>
+                                        <th>Pilotos</th>
+                                        <th>Voltas</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankingEquipeBody">
+                                    <!-- Será preenchido por JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Melhor volta por Corredor -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2>⚡ Melhor Volta por Corredor (Top 10)</h2>
+                    </div>
+                    <div class="card-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Corredor</th>
+                                    <th>Equipe</th>
+                                    <th>Turma</th>
+                                    <th>Melhor Volta</th>
+                                    <th>Total de Voltas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="melhorVoltaCorradorBody">
+                                <!-- Será preenchido por JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Corredores -->
+            <section id="corredores" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Gerenciador de Corredores</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Turma</th>
+                                    <th>Equipe</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corredoresTableBody">
+                                <!-- Será preenchido por JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Usuários -->
+            <section id="usuarios" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Gerenciador de Usuários</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Data Cadastro</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usuariosTableBody">
+                                <!-- Será preenchido por JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Ranking -->
+            <section id="ranking" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Rankings Gerais</h1>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🥇 Ranking Geral de Corredores</h2>
+                        </div>
+                        <div class="card-body">
+                            <table class="ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-col">Pos</th>
+                                        <th>Corredor</th>
+                                        <th>Equipe</th>
+                                        <th>Voltas</th>
+                                        <th>Média</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankingGeralBody">
+                                    <!-- Será preenchido por JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Pista -->
+            <section id="pista" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Informações da Pista</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📍 Detalhes da Pista</h2>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+                            Adicione as informações da pista aqui
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Voltas -->
+            <section id="voltas" class="dashboard-section">
+                <div class="section-header">
+                    <h1>Histórico de Voltas</h1>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Corredor</th>
+                                    <th>Tempo (s)</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="voltasTableBody">
+                                <!-- Será preenchido por JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Inicializar Dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                iniciarGradienteLiquido();
+                checkAuthAndInitialize();
+                setupSectionNavigation();
+                loadDashboardData();
+                updateDateTime();
+                setInterval(updateDateTime, 1000);
+            } catch (error) {
+                console.error('Erro ao inicializar dashboard:', error);
+                alert('Erro ao carregar dashboard: ' + error.message);
+            }
+        });
+
+        function iniciarGradienteLiquido() {
+            const container = document.getElementById('canvas-gradiente');
+            
+            // Cena 3D
+            const scene = new THREE.Scene();
+            
+            // Câmera
+            const camera = new THREE.PerspectiveCamera(
+                75,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.z = 1;
+            
+            // Renderizador
+            const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x0a0e27, 1);
+            container.appendChild(renderer.domElement);
+            
+            // Geometria e Material
+            const geometry = new THREE.IcosahedronGeometry(1, 5);
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x667eea,
+                emissive: 0x764ba2,
+                shininess: 100,
+                wireframe: false
+            });
+            
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            
+            // Iluminação
+            const light = new THREE.PointLight(0xffffff, 1.5, 100);
+            light.position.set(5, 5, 5);
+            scene.add(light);
+            
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            
+            // Responsividade
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+            
+            // Animação
+            function animar() {
+                requestAnimationFrame(animar);
+                mesh.rotation.x += 0.0005;
+                mesh.rotation.y += 0.001;
+                renderer.render(scene, camera);
+            }
+            animar();
+        }
+
+        function checkAuthAndInitialize() {
+            const userStr = localStorage.getItem('userLoggedIn');
+            
+            if (!userStr) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const user = JSON.parse(userStr);
+                
+                if (!user || !user.email) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                const userTypeDisplay = document.getElementById('userTypeDisplay');
+                const welcomeTitle = document.getElementById('welcomeTitle');
+                const adminLink = document.getElementById('adminLink');
+
+                if (userNameDisplay) userNameDisplay.textContent = user.name || 'Usuário';
+                if (userTypeDisplay) userTypeDisplay.textContent = user.type === 'corredor' ? '🏎️ Corredor' : '👤 Usuário';
+                if (welcomeTitle) welcomeTitle.textContent = `Bem-vindo, ${user.name}!`;
+                
+                if (adminLink && user.isAdmin) {
+                    adminLink.style.display = 'inline-block';
+                }
+            } catch (error) {
+                console.error('Erro ao fazer parse do usuário:', error);
+                localStorage.removeItem('userLoggedIn');
+                window.location.href = 'login.html';
+            }
+        }
+
+        function updateDateTime() {
+            try {
+                const now = new Date();
+                const formatDate = now.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const time = now.toLocaleTimeString('pt-BR');
+                const headerDate = document.getElementById('headerDate');
+                if (headerDate) {
+                    headerDate.textContent = `${formatDate} - ${time}`;
+                }
+            } catch (error) {
+                console.error('Erro ao atualizar data/hora:', error);
+            }
+        }
+
+        function setupSectionNavigation() {
+            try {
+                const menuItems = document.querySelectorAll('.menu-item');
+                if (menuItems.length === 0) {
+                    console.warn('Nenhum menu-item encontrado');
+                    return;
+                }
+
+                menuItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const section = this.dataset.section;
+                        if (section) {
+                            showSection(section);
+                            
+                            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                            this.classList.add('active');
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Erro ao setupar navegação de seções:', error);
+            }
+        }
+
+        function showSection(sectionId) {
+            try {
+                document.querySelectorAll('.dashboard-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.classList.add('active');
+                } else {
+                    console.warn(`Seção ${sectionId} não encontrada`);
+                }
+            } catch (error) {
+                console.error('Erro ao exibir seção:', error);
+            }
+        }
+
+        function loadDashboardData() {
+            try {
+                console.log('Dashboard carregado com sucesso');
+            } catch (error) {
+                console.error('Erro ao carregar dados do dashboard:', error);
+            }
+        }
+
+        function logout() {
+            try {
+                localStorage.removeItem('userLoggedIn');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Erro ao fazer logout:', error);
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
+</body>
+</html>

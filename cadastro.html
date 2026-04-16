@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - RaceFlow</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container-auth">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-container">
+                <div class="navbar-logo">
+                    <span class="logo-icon">🏁</span>
+                    <span class="logo-text">RaceFlow</span>
+                </div>
+                <div class="navbar-links">
+                    <a href="index.html" class="nav-link">Início</a>
+                    <a href="login.html" class="nav-link">Login</a>
+                    <a href="cadastro.html" class="nav-link active">Cadastro</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="auth-wrapper">
+            <!-- Left Section -->
+            <div class="auth-visual">
+                <div class="neon-circle circle-1"></div>
+                <div class="neon-circle circle-2"></div>
+                <div class="auth-icon">🏎️</div>
+                <h2>Junte-se ao RaceFlow</h2>
+                <p>Crie sua conta e comece a competir</p>
+            </div>
+
+            <!-- Right Section -->
+            <div class="auth-form">
+                <div class="form-header">
+                    <h1>Cadastro</h1>
+                    <p>Complete seus dados para começar</p>
+                </div>
+
+                <!-- Register Type Selector -->
+                <div class="login-tabs">
+                    <button class="tab-btn active" data-type="usuario">
+                        <span class="tab-icon">👤</span>
+                        Usuário
+                    </button>
+                    <button class="tab-btn" data-type="corredor">
+                        <span class="tab-icon">🏎️</span>
+                        Corredor
+                    </button>
+                </div>
+
+                <!-- Usuario Registration Form -->
+                <form id="formCadastroUsuario" class="auth-form-content active">
+                    <div class="form-group">
+                        <label for="nomeUsuario">Nome Completo</label>
+                        <input type="text" id="nomeUsuario" placeholder="João Silva" required>
+                        <span class="input-icon">👤</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emailCadastroUsuario">Email</label>
+                        <input type="email" id="emailCadastroUsuario" placeholder="seu@email.com" required>
+                        <span class="input-icon">✉️</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="senhaCadastroUsuario">Senha</label>
+                        <input type="password" id="senhaCadastroUsuario" placeholder="••••••••" required>
+                        <span class="input-icon">🔒</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmSenhaUsuario">Confirmar Senha</label>
+                        <input type="password" id="confirmSenhaUsuario" placeholder="••••••••" required>
+                        <span class="input-icon">🔒</span>
+                    </div>
+
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="termsUsuario" required>
+                        <label for="termsUsuario">Concordo com os <a href="#">Termos e Condições</a></label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <span>Criar Conta de Usuário</span>
+                        <span class="btn-arrow">→</span>
+                    </button>
+                </form>
+
+                <!-- Corredor Registration Form -->
+                <form id="formCadastroCorredor" class="auth-form-content">
+                    <div class="form-group">
+                        <label for="nomeCorredor">Nome Completo</label>
+                        <input type="text" id="nomeCorredor" placeholder="João Silva" required>
+                        <span class="input-icon">👤</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="emailCadastroCorredor">Email</label>
+                        <input type="email" id="emailCadastroCorredor" placeholder="seu@email.com" required>
+                        <span class="input-icon">✉️</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="senhaCadastroCorredor">Senha</label>
+                        <input type="password" id="senhaCadastroCorredor" placeholder="••••••••" required>
+                        <span class="input-icon">🔒</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmSenhaCorredor">Confirmar Senha</label>
+                        <input type="password" id="confirmSenhaCorredor" placeholder="••••••••" required>
+                        <span class="input-icon">🔒</span>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="turmaCorredor">Turma</label>
+                            <select id="turmaCorredor" required>
+                                <option value="">Selecione uma turma</option>
+                                <option value="Turma A">Turma A</option>
+                                <option value="Turma B">Turma B</option>
+                                <option value="Turma C">Turma C</option>
+                                <option value="Turma D">Turma D</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="equipeCorredor">Equipe</label>
+                            <select id="equipeCorredor" required>
+                                <option value="">Selecione uma equipe</option>
+                                <option value="Red Racing">Red Racing</option>
+                                <option value="Blue Velocity">Blue Velocity</option>
+                                <option value="Silver Speed">Silver Speed</option>
+                                <option value="Gold Thunder">Gold Thunder</option>
+                                <option value="Purple Force">Purple Force</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="termsCorredor" required>
+                        <label for="termsCorredor">Concordo com os <a href="#">Termos e Condições</a></label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full">
+                        <span>Criar Conta de Corredor</span>
+                        <span class="btn-arrow">→</span>
+                    </button>
+                </form>
+
+                <!-- Success Message -->
+                <div id="successMessage" class="alert alert-success" style="display: none;">
+                    ✓ Cadastro realizado com sucesso! Redirecionando...
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="alert alert-error" style="display: none;"></div>
+
+                <div class="form-footer">
+                    <p>Já possui conta? <a href="login.html" class="link">Faça login aqui</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2026 RaceFlow - Sistema de Corridas. Todos os direitos reservados.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Register Tab Switching
+        document.querySelectorAll('.tab-btn').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const type = this.dataset.type;
+                
+                document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.auth-form-content').forEach(form => form.classList.remove('active'));
+                if (type === 'usuario') {
+                    document.getElementById('formCadastroUsuario').classList.add('active');
+                } else {
+                    document.getElementById('formCadastroCorredor').classList.add('active');
+                }
+            });
+        });
+
+        // Usuario Registration Handler
+        document.getElementById('formCadastroUsuario').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nome = document.getElementById('nomeUsuario').value;
+            const email = document.getElementById('emailCadastroUsuario').value;
+            const senha = document.getElementById('senhaCadastroUsuario').value;
+            const confirmSenha = document.getElementById('confirmSenhaUsuario').value;
+            
+            if (senha !== confirmSenha) {
+                showErrorMessage('As senhas não conferem');
+                return;
+            }
+            
+            // Simular cadastro
+            localStorage.setItem('userLoggedIn', JSON.stringify({
+                type: 'usuario',
+                email: email,
+                name: nome
+            }));
+            
+            showSuccessMessage();
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1500);
+        });
+
+        // Corredor Registration Handler
+        document.getElementById('formCadastroCorredor').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nome = document.getElementById('nomeCorredor').value;
+            const email = document.getElementById('emailCadastroCorredor').value;
+            const senha = document.getElementById('senhaCadastroCorredor').value;
+            const confirmSenha = document.getElementById('confirmSenhaCorredor').value;
+            const turma = document.getElementById('turmaCorredor').value;
+            const equipe = document.getElementById('equipeCorredor').value;
+            
+            if (senha !== confirmSenha) {
+                showErrorMessage('As senhas não conferem');
+                return;
+            }
+            
+            // Simular cadastro
+            localStorage.setItem('userLoggedIn', JSON.stringify({
+                type: 'corredor',
+                email: email,
+                name: nome,
+                turma: turma,
+                equipe: equipe
+            }));
+            
+            showSuccessMessage();
+            setTimeout(() => {
+                window.location.href = 'dashboard.html';
+            }, 1500);
+        });
+
+        function showSuccessMessage() {
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        function showErrorMessage(message) {
+            document.getElementById('errorMessage').textContent = `✗ ${message}`;
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
