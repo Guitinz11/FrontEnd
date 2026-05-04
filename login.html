@@ -126,16 +126,56 @@
 
     <script src="script.js"></script>
     <script>
-        // Login Tab Switching
+        const API_URL = 'http://localhost:3000';
+
+        function showSuccessMessage(message) {
+            const element = document.getElementById('successMessage');
+            if (element) {
+                element.textContent = `✓ ${message}`;
+                element.style.display = 'block';
+            }
+            const errorElement = document.getElementById('errorMessage');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        }
+
+        function showErrorMessage(message) {
+            const element = document.getElementById('errorMessage');
+            if (element) {
+                element.textContent = `✗ ${message}`;
+                element.style.display = 'block';
+            }
+        }
+
+        function setUserSession(user) {
+            localStorage.setItem('userLoggedIn', JSON.stringify(user));
+        }
+
+        async function sendRequest(path, payload) {
+            try {
+                const response = await fetch(`${API_URL}${path}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.erro || data.message || 'Erro ao conectar com o servidor');
+                }
+
+                return data;
+            } catch (error) {
+                throw new Error(error.message || 'Erro ao conectar com o servidor');
+            }
+        }
+
         document.querySelectorAll('.tab-btn').forEach(tab => {
             tab.addEventListener('click', function() {
                 const type = this.dataset.type;
-                
-                // Update active tab
                 document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
-                
-                // Update form visibility
                 document.querySelectorAll('.auth-form-content').forEach(form => form.classList.remove('active'));
                 if (type === 'usuario') {
                     document.getElementById('formLoginUsuario').classList.add('active');
@@ -145,64 +185,59 @@
             });
         });
 
-        // Login Form Handlers
-        document.getElementById('formLoginUsuario').addEventListener('submit', function(e) {
+        document.getElementById('formLoginUsuario').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById('emailUsuario').value;
-            const senha = document.getElementById('senhaUsuario').value;
-            
-            if (email && senha) {
-                // Verificar se é admin
-                const isAdmin = email === 'joao@adm' && senha === '1234';
-                
-                // Simular login
-                localStorage.setItem('userLoggedIn', JSON.stringify({
-                    type: 'usuario',
-                    email: email,
-                    name: email.split('@')[0],
-                    isAdmin: isAdmin
-                }));
-                
-                showSuccessMessage('usuário');
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
+            const email = document.getElementById('emailUsuario').value.trim();
+            const senha = document.getElementById('senhaUsuario').value.trim();
+
+            if (!email || !senha) {
+                showErrorMessage('Email e senha são obrigatórios');
+                return;
+            }
+
+            if (email === 'joao@adm' && senha === '123') {
+                setUserSession({ type: 'admin', email, name: 'Administrador', isAdmin: true });
+                showSuccessMessage('Acesso administrativo');
+                setTimeout(() => { window.location.href = 'admin.html'; }, 800);
+                return;
+            }
+
+            try {
+                const data = await sendRequest('/usuarios/login', { email, senha });
+                setUserSession({ type: 'usuario', email, name: data.user?.nome || email.split('@')[0], token: data.token });
+                showSuccessMessage('Login realizado com sucesso');
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
+            } catch (error) {
+                showErrorMessage(error.message);
             }
         });
 
-        document.getElementById('formLoginCorredor').addEventListener('submit', function(e) {
+        document.getElementById('formLoginCorredor').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const email = document.getElementById('emailCorredor').value;
-            const senha = document.getElementById('senhaCorredor').value;
-            
-            if (email && senha) {
-                // Verificar se é admin
-                const isAdmin = email === 'joao@adm' && senha === '1234';
-                
-                // Simular login
-                localStorage.setItem('userLoggedIn', JSON.stringify({
-                    type: 'corredor',
-                    email: email,
-                    name: email.split('@')[0],
-                    isAdmin: isAdmin
-                }));
-                
-                showSuccessMessage('corredor');
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 1500);
+            const email = document.getElementById('emailCorredor').value.trim();
+            const senha = document.getElementById('senhaCorredor').value.trim();
+
+            if (!email || !senha) {
+                showErrorMessage('Email e senha são obrigatórios');
+                return;
+            }
+
+            if (email === 'joao@adm' && senha === '123') {
+                setUserSession({ type: 'admin', email, name: 'Administrador', isAdmin: true });
+                showSuccessMessage('Acesso administrativo');
+                setTimeout(() => { window.location.href = 'admin.html'; }, 800);
+                return;
+            }
+
+            try {
+                const data = await sendRequest('/corredores/login', { email, senha });
+                setUserSession({ type: 'corredor', email, name: data.corredor?.nome || email.split('@')[0], token: data.token });
+                showSuccessMessage('Login realizado com sucesso');
+                setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
+            } catch (error) {
+                showErrorMessage(error.message);
             }
         });
-
-        function showSuccessMessage(type) {
-            document.getElementById('successMessage').style.display = 'block';
-            document.getElementById('errorMessage').style.display = 'none';
-        }
-
-        function showErrorMessage(message) {
-            document.getElementById('errorMessage').textContent = `✗ ${message}`;
-            document.getElementById('errorMessage').style.display = 'block';
-        }
     </script>
 </body>
 </html>

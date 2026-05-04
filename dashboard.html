@@ -37,6 +37,7 @@
                 <div class="navbar-links">
                     <a href="dashboard.html" class="nav-link active">Dashboard</a>
                     <a href="admin.html" class="nav-link" id="adminLink" style="display: none;">Admin</a>
+                    <a href="sobre-nos.html" class="nav-link">Sobre Nós</a>
                     <a href="index.html" class="nav-link" onclick="logout(); return false;">Sair</a>
                 </div>
             </div>
@@ -326,7 +327,8 @@
 
     <script src="script.js"></script>
     <script>
-        // Inicializar Dashboard
+        const API_URL = 'http://localhost:3000';
+
         document.addEventListener('DOMContentLoaded', function() {
             try {
                 iniciarGradienteLiquido();
@@ -341,28 +343,45 @@
             }
         });
 
+        async function fetchJSON(path) {
+            try {
+                const response = await fetch(`${API_URL}${path}`);
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.erro || data.message || 'Erro ao carregar dados');
+                }
+                return data;
+            } catch (error) {
+                console.error('Erro fetchJSON:', error);
+                throw error;
+            }
+        }
+
+        function formatValue(value) {
+            return value === null || value === undefined || value === '' ? '__' : value;
+        }
+
+        function createPlaceholderRows(count = 5, cells = 4) {
+            return Array.from({ length: count }, () => `
+                <tr>
+                    ${'<td>__</td>'.repeat(cells)}
+                </tr>
+            `).join('');
+        }
+
         function iniciarGradienteLiquido() {
             const container = document.getElementById('canvas-gradiente');
-            
-            // Cena 3D
+            if (!container) return;
+
             const scene = new THREE.Scene();
-            
-            // Câmera
-            const camera = new THREE.PerspectiveCamera(
-                75,
-                window.innerWidth / window.innerHeight,
-                0.1,
-                1000
-            );
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 1;
-            
-            // Renderizador
+
             const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setClearColor(0x0a0e27, 1);
             container.appendChild(renderer.domElement);
-            
-            // Geometria e Material
+
             const geometry = new THREE.IcosahedronGeometry(1, 5);
             const material = new THREE.MeshPhongMaterial({
                 color: 0x667eea,
@@ -370,26 +389,23 @@
                 shininess: 100,
                 wireframe: false
             });
-            
+
             const mesh = new THREE.Mesh(geometry, material);
             scene.add(mesh);
-            
-            // Iluminação
+
             const light = new THREE.PointLight(0xffffff, 1.5, 100);
             light.position.set(5, 5, 5);
             scene.add(light);
-            
+
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
             scene.add(ambientLight);
-            
-            // Responsividade
+
             window.addEventListener('resize', () => {
                 camera.aspect = window.innerWidth / window.innerHeight;
                 camera.updateProjectionMatrix();
                 renderer.setSize(window.innerWidth, window.innerHeight);
             });
-            
-            // Animação
+
             function animar() {
                 requestAnimationFrame(animar);
                 mesh.rotation.x += 0.0005;
@@ -401,7 +417,6 @@
 
         function checkAuthAndInitialize() {
             const userStr = localStorage.getItem('userLoggedIn');
-            
             if (!userStr) {
                 window.location.href = 'login.html';
                 return;
@@ -409,28 +424,129 @@
 
             try {
                 const user = JSON.parse(userStr);
-                
                 if (!user || !user.email) {
                     window.location.href = 'login.html';
                     return;
                 }
 
-                const userNameDisplay = document.getElementById('userNameDisplay');
-                const userTypeDisplay = document.getElementById('userTypeDisplay');
-                const welcomeTitle = document.getElementById('welcomeTitle');
-                const adminLink = document.getElementById('adminLink');
+                document.getElementById('userNameDisplay').textContent = user.name || 'Usuário';
+                document.getElementById('userTypeDisplay').textContent = user.isAdmin ? '🛠️ Admin' : user.type === 'corredor' ? '🏎️ Corredor' : '👤 Usuário';
+                document.getElementById('welcomeTitle').textContent = `Bem-vindo, ${user.name || 'Usuário'}!`;
 
-                if (userNameDisplay) userNameDisplay.textContent = user.name || 'Usuário';
-                if (userTypeDisplay) userTypeDisplay.textContent = user.type === 'corredor' ? '🏎️ Corredor' : '👤 Usuário';
-                if (welcomeTitle) welcomeTitle.textContent = `Bem-vindo, ${user.name}!`;
-                
-                if (adminLink && user.isAdmin) {
-                    adminLink.style.display = 'inline-block';
+                const adminLink = document.getElementById('adminLink');
+                if (adminLink) {
+                    adminLink.style.display = user.isAdmin ? 'inline-block' : 'none';
+                }
+
+                // Ocultar seções de admin para usuários normais
+                if (!user.isAdmin) {
+                    const corredoresItem = document.querySelector('[data-section="corredores"]');
+                    const usuariosItem = document.querySelector('[data-section="usuarios"]');
+                    if (corredoresItem) corredoresItem.style.display = 'none';
+                    if (usuariosItem) usuariosItem.style.display = 'none';
                 }
             } catch (error) {
-                console.error('Erro ao fazer parse do usuário:', error);
+                console.error('Erro ao validar sessão:', error);
                 localStorage.removeItem('userLoggedIn');
                 window.location.href = 'login.html';
+            }
+        }
+
+        async function loadDashboardData() {
+            await Promise.all([
+                loadTotalCorredores(),
+                loadTotalUsuarios(),
+                loadTotalVoltas(),
+                loadMelhorVoltaGeral(),
+                loadTopVoltas(),
+                loadRankingGeral()
+            ]).catch(error => {
+                console.error('Erro ao carregar dados do dashboard:', error);
+            });
+        }
+
+        async function loadTotalCorredores() {
+            const element = document.getElementById('totalCorredores');
+            try {
+                const corredores = await fetchJSON('/corredores');
+                element.textContent = formatValue(Array.isArray(corredores) ? corredores.length : '__');
+            } catch (error) {
+                element.textContent = '__';
+            }
+        }
+
+        async function loadTotalUsuarios() {
+            const element = document.getElementById('totalUsuarios');
+            try {
+                const usuarios = await fetchJSON('/usuarios');
+                element.textContent = formatValue(Array.isArray(usuarios) ? usuarios.length : '__');
+            } catch (error) {
+                element.textContent = '__';
+            }
+        }
+
+        async function loadTotalVoltas() {
+            const element = document.getElementById('totalVoltas');
+            try {
+                const data = await fetchJSON('/voltas/contagem');
+                element.textContent = formatValue(data?.total_voltas ?? '__');
+            } catch (error) {
+                element.textContent = '__';
+            }
+        }
+
+        async function loadMelhorVoltaGeral() {
+            const element = document.getElementById('melhorVoltaGeral');
+            try {
+                const data = await fetchJSON('/voltas/melhor-volta-geral');
+                element.textContent = formatValue(data?.melhor_volta ? `${data.melhor_volta}s` : '__');
+            } catch (error) {
+                element.textContent = '__';
+            }
+        }
+
+        async function loadTopVoltas() {
+            const tbody = document.getElementById('topVoltasBody');
+            try {
+                const data = await fetchJSON('/voltas/top5-melhores-voltas');
+                const ranking = Array.isArray(data?.ranking) ? data.ranking : [];
+                if (ranking.length === 0) {
+                    tbody.innerHTML = createPlaceholderRows(5, 4);
+                    return;
+                }
+                tbody.innerHTML = ranking.map(item => `
+                    <tr>
+                        <td>${formatValue(item.rank)}</td>
+                        <td>${formatValue(item.nome)}</td>
+                        <td>${formatValue(item.tempo)}s</td>
+                        <td>${formatValue(item.equipe)}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                tbody.innerHTML = createPlaceholderRows(5, 4);
+            }
+        }
+
+        async function loadRankingGeral() {
+            const tbody = document.getElementById('rankingGeralBody');
+            try {
+                const data = await fetchJSON('/voltas/ranking');
+                const ranking = Array.isArray(data?.ranking) ? data.ranking : [];
+                if (ranking.length === 0) {
+                    tbody.innerHTML = createPlaceholderRows(5, 5);
+                    return;
+                }
+                tbody.innerHTML = ranking.map((item, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${formatValue(item.nome)}</td>
+                        <td>${formatValue(item.equipe)}</td>
+                        <td>${formatValue(item.total_voltas ?? '__')}</td>
+                        <td>${formatValue(item.melhor_volta ?? '__')}s</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                tbody.innerHTML = createPlaceholderRows(5, 5);
             }
         }
 
@@ -440,71 +556,49 @@
                 const formatDate = now.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
                 const time = now.toLocaleTimeString('pt-BR');
                 const headerDate = document.getElementById('headerDate');
-                if (headerDate) {
-                    headerDate.textContent = `${formatDate} - ${time}`;
-                }
+                if (headerDate) headerDate.textContent = `${formatDate} - ${time}`;
             } catch (error) {
                 console.error('Erro ao atualizar data/hora:', error);
             }
         }
 
         function setupSectionNavigation() {
-            try {
-                const menuItems = document.querySelectorAll('.menu-item');
-                if (menuItems.length === 0) {
-                    console.warn('Nenhum menu-item encontrado');
-                    return;
-                }
+            const userStr = localStorage.getItem('userLoggedIn');
+            const user = userStr ? JSON.parse(userStr) : {};
+            const isAdmin = user.isAdmin;
 
-                menuItems.forEach(item => {
-                    item.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const section = this.dataset.section;
-                        if (section) {
-                            showSection(section);
-                            
-                            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                            this.classList.add('active');
-                        }
-                    });
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.dataset.section;
+                    if (!section) return;
+
+                    // Verificar permissão para acessar seções restritas
+                    if ((section === 'corredores' || section === 'usuarios') && !isAdmin) {
+                        alert('Acesso restrito! Apenas administradores podem acessar esta seção.');
+                        return;
+                    }
+
+                    document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
+                    const target = document.getElementById(section);
+                    if (target) target.classList.add('active');
+                    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
                 });
-            } catch (error) {
-                console.error('Erro ao setupar navegação de seções:', error);
-            }
+            });
         }
 
         function showSection(sectionId) {
-            try {
-                document.querySelectorAll('.dashboard-section').forEach(section => {
-                    section.classList.remove('active');
-                });
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    section.classList.add('active');
-                } else {
-                    console.warn(`Seção ${sectionId} não encontrada`);
-                }
-            } catch (error) {
-                console.error('Erro ao exibir seção:', error);
-            }
-        }
-
-        function loadDashboardData() {
-            try {
-                console.log('Dashboard carregado com sucesso');
-            } catch (error) {
-                console.error('Erro ao carregar dados do dashboard:', error);
-            }
+            const section = document.getElementById(sectionId);
+            if (!section) return;
+            document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
+            section.classList.add('active');
         }
 
         function logout() {
-            try {
-                localStorage.removeItem('userLoggedIn');
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Erro ao fazer logout:', error);
-                window.location.href = 'index.html';
-            }
+            localStorage.removeItem('userLoggedIn');
+            window.location.href = 'index.html';
         }
     </script>
 </body>

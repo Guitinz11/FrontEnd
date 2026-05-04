@@ -78,6 +78,21 @@
                         <span class="input-icon">🔒</span>
                     </div>
 
+                    <div class="form-group">
+                        <label for="turmaUsuario">Turma</label>
+                        <select id="turmaUsuario" required>
+                            <option value="">Selecione uma turma</option>
+                            <option value="Turma A">IDEV 3</option>
+                            <option value="Turma B">IDEV 4</option>
+                            <option value="Turma C">IDEV 5</option>
+                            <option value="Turma D">OUTRO IDEV</option>
+                            <option value="Turma E">ILEMEC 3</option>
+                            <option value="Turma F">ILEMEC 4</option>
+                            <option value="Turma G">ILEMEC 5</option>
+                            <option value="Turma H">OUTRO ILEMEC</option>
+                        </select>
+                    </div>
+
                     <div class="form-checkbox">
                         <input type="checkbox" id="termsUsuario" required>
                         <label for="termsUsuario">Concordo com os <a href="#">Termos e Condições</a></label>
@@ -120,10 +135,14 @@
                             <label for="turmaCorredor">Turma</label>
                             <select id="turmaCorredor" required>
                                 <option value="">Selecione uma turma</option>
-                                <option value="Turma A">Turma A</option>
-                                <option value="Turma B">Turma B</option>
-                                <option value="Turma C">Turma C</option>
-                                <option value="Turma D">Turma D</option>
+                                <option value="Turma A">IDEV 3</option>
+                                <option value="Turma B">IDEV 4</option>
+                                <option value="Turma C">IDEV 5</option>
+                                <option value="Turma D">OUTRO IDEV</option>
+                                <option value="Turma E">ILEMEC 3</option>
+                                <option value="Turma F">ILEMEC 4</option>
+                                <option value="Turma G">ILEMEC 5</option>
+                                <option value="Turma H">OUTRO ILEMEC</option>
                             </select>
                         </div>
 
@@ -192,35 +211,69 @@
             });
         });
 
+const API_URL = 'http://localhost:3000';
+
+        async function sendCadastro(path, payload) {
+            try {
+                const response = await fetch(`${API_URL}${path}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.erro || data.message || 'Erro ao cadastrar');
+                }
+
+                return data;
+            } catch (error) {
+                throw new Error(error.message || 'Erro de conexão');
+            }
+        }
+
         // Usuario Registration Handler
-        document.getElementById('formCadastroUsuario').addEventListener('submit', function(e) {
+        document.getElementById('formCadastroUsuario').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const nome = document.getElementById('nomeUsuario').value;
             const email = document.getElementById('emailCadastroUsuario').value;
             const senha = document.getElementById('senhaCadastroUsuario').value;
             const confirmSenha = document.getElementById('confirmSenhaUsuario').value;
+            const turma = document.getElementById('turmaUsuario').value;
             
             if (senha !== confirmSenha) {
                 showErrorMessage('As senhas não conferem');
                 return;
             }
-            
-            // Simular cadastro
-            localStorage.setItem('userLoggedIn', JSON.stringify({
-                type: 'usuario',
-                email: email,
-                name: nome
-            }));
-            
-            showSuccessMessage();
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
+
+            if (!turma) {
+                showErrorMessage('Selecione uma turma');
+                return;
+            }
+
+            try {
+                await sendCadastro('/usuarios/cadastro', { nome, email, senha, turma });
+                localStorage.setItem('userLoggedIn', JSON.stringify({
+                    type: 'usuario',
+                    email,
+                    name: nome,
+                    turma
+                }));
+
+                showSuccessMessage();
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            } catch (error) {
+                showErrorMessage(error.message);
+            }
         });
 
         // Corredor Registration Handler
-        document.getElementById('formCadastroCorredor').addEventListener('submit', function(e) {
+        document.getElementById('formCadastroCorredor').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const nome = document.getElementById('nomeCorredor').value;
@@ -235,19 +288,28 @@
                 return;
             }
             
-            // Simular cadastro
-            localStorage.setItem('userLoggedIn', JSON.stringify({
-                type: 'corredor',
-                email: email,
-                name: nome,
-                turma: turma,
-                equipe: equipe
-            }));
+            if (!turma || !equipe) {
+                showErrorMessage('Todos os campos são obrigatórios');
+                return;
+            }
             
-            showSuccessMessage();
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
+            try {
+                await sendCadastro('/corredores/cadastro', { nome, email, senha, turma, equipe });
+                localStorage.setItem('userLoggedIn', JSON.stringify({
+                    type: 'corredor',
+                    email,
+                    name: nome,
+                    turma,
+                    equipe
+                }));
+
+                showSuccessMessage();
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            } catch (error) {
+                showErrorMessage(error.message);
+            }
         });
 
         function showSuccessMessage() {

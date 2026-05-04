@@ -199,15 +199,19 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="adminCorredorTurma">Turma *</label>
-                        <select id="adminCorredorTurma" required>
-                            <option value="">Selecione</option>
-                            <option value="Turma A">Turma A</option>
-                            <option value="Turma B">Turma B</option>
-                            <option value="Turma C">Turma C</option>
-                            <option value="Turma D">Turma D</option>
-                        </select>
-                    </div>
+                            <label for="turmaCorredor">Turma</label>
+                            <select id="turmaCorredor" required>
+                                <option value="">Selecione uma turma</option>
+                                <option value="Turma A">IDEV 3</option>
+                                <option value="Turma B">IDEV 4</option>
+                                <option value="Turma C">IDEV 5</option>
+                                <option value="Turma D">OUTRO IDEV</option>
+                                <option value="Turma E">ILEMEC 3</option>
+                                <option value="Turma F">ILEMEC 4</option>
+                                <option value="Turma G">ILEMEC 5</option>
+                                <option value="Turma H">OUTRO ILEMEC</option>
+                            </select>
+                        </div>
                     <div class="form-group">
                         <label for="adminCorredorEquipe">Equipe *</label>
                         <select id="adminCorredorEquipe" required>
@@ -257,6 +261,20 @@
                         <option value="Usuário">Usuário</option>
                     </select>
                 </div>
+               <div class="form-group">
+                            <label for="turmaCorredor">Turma</label>
+                            <select id="turmaCorredor" required>
+                                <option value="">Selecione uma turma</option>
+                                <option value="Turma A">IDEV 3</option>
+                                <option value="Turma B">IDEV 4</option>
+                                <option value="Turma C">IDEV 5</option>
+                                <option value="Turma D">OUTRO IDEV</option>
+                                <option value="Turma E">ILEMEC 3</option>
+                                <option value="Turma F">ILEMEC 4</option>
+                                <option value="Turma G">ILEMEC 5</option>
+                                <option value="Turma H">OUTRO ILEMEC</option>
+                            </select>
+                        </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" onclick="closeUsuarioModal()">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Salvar</button>
@@ -267,23 +285,23 @@
 
     <script src="script.js"></script>
     <script>
-        // Inicializar Admin
+        const API_URL = 'http://localhost:3000';
+
         document.addEventListener('DOMContentLoaded', function() {
             try {
-                // Verificar se é admin
                 const userStr = localStorage.getItem('userLoggedIn');
                 if (!userStr) {
                     window.location.href = 'login.html';
                     return;
                 }
-                
+
                 const user = JSON.parse(userStr);
                 if (!user.isAdmin) {
                     alert('Acesso negado! Apenas administradores podem acessar esta página.');
                     window.location.href = 'dashboard.html';
                     return;
                 }
-                
+
                 loadAdminData();
                 setupAdminNavigation();
                 setupSearch();
@@ -293,368 +311,368 @@
             }
         });
 
-        function setupAdminNavigation() {
-            try {
-                const menuItems = document.querySelectorAll('.menu-item');
-                if (menuItems.length === 0) {
-                    console.warn('Nenhum menu-item encontrado');
-                    return;
-                }
-
-                menuItems.forEach(item => {
-                    item.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const section = this.dataset.section;
-                        if (section) {
-                            const sections = document.querySelectorAll('.dashboard-section');
-                            sections.forEach(s => s.classList.remove('active'));
-                            
-                            const targetSection = document.getElementById(section);
-                            if (targetSection) {
-                                targetSection.classList.add('active');
-                            }
-                            
-                            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                            this.classList.add('active');
-                        }
-                    });
-                });
-            } catch (error) {
-                console.error('Erro ao setupar navegação admin:', error);
+        async function fetchJSON(path) {
+            const response = await fetch(`${API_URL}${path}`);
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.erro || data.message || 'Erro ao buscar dados');
             }
+            return data;
         }
 
-        function loadAdminData() {
+        async function sendJSON(path, payload, method = 'POST') {
+            const response = await fetch(`${API_URL}${path}`, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.erro || data.message || 'Erro ao salvar dados');
+            }
+            return data;
+        }
+
+        async function deleteJSON(path) {
+            const response = await fetch(`${API_URL}${path}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.erro || data.message || 'Erro ao deletar');
+            }
+            return data;
+        }
+
+        let allCorredores = [];
+        let allUsuarios = [];
+        let editingCorredorId = null;
+        let editingUsuarioId = null;
+
+        function formatValue(value) {
+            if (value === null || value === undefined || value === '') return '__';
+            return value;
+        }
+
+        function showPlaceholderRow(tbody, cols) {
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="${cols}" style="text-align:center; color:#999;">Nenhum registro disponível</td></tr>`;
+        }
+
+        async function loadAdminData() {
             try {
-                const corredores = generateMockCorredores();
-                const usuarios = generateMockUsuarios();
-                const voltas = generateMockVoltas();
+                const [corredores, usuarios, voltasData] = await Promise.all([
+                    fetchJSON('/corredores'),
+                    fetchJSON('/usuarios'),
+                    fetchJSON('/voltas/top5-melhores-voltas').catch(() => ({ ranking: [] }))
+                ]);
+
+                allCorredores = corredores;
+                allUsuarios = usuarios;
 
                 populateAdminCorredores(corredores);
                 populateAdminUsuarios(usuarios);
-                populateAdminVoltas(voltas);
+                populateAdminVoltas(voltasData.ranking || []);
                 loadLogs();
-                
-                // Esconder cards vazios
-                document.querySelectorAll('.card').forEach(card => {
-                    const tbody = card.querySelector('tbody');
-                    if (tbody && tbody.children.length === 0) {
-                        card.style.display = 'none';
-                    }
-                });
             } catch (error) {
                 console.error('Erro ao carregar dados admin:', error);
+                alert('Não foi possível carregar dados administrativos: ' + error.message);
             }
-        }
-
-        function generateMockCorredores() {
-            return [];
-        }
-
-        function generateMockUsuarios() {
-            return [];
-        }
-
-        function generateMockVoltas() {
-            return [];
         }
 
         function populateAdminCorredores(corredores) {
-            try {
-                const tbody = document.getElementById('adminCorredoresBody');
-                if (!tbody) {
-                    console.warn('Elemento adminCorredoresBody não encontrado');
-                    return;
-                }
-                tbody.innerHTML = corredores.map(c => `
-                    <tr class="table-row">
-                        <td>${c.id}</td>
-                        <td><strong>${c.nome}</strong></td>
-                        <td>${c.email}</td>
-                        <td>${c.turma}</td>
-                        <td><span class="badge">${c.equipe}</span></td>
-                        <td><span class="badge ${c.status === 'Ativo' ? 'badge-success' : 'badge-warning'}">${c.status}</span></td>
-                        <td class="actions-cell">
-                            <button class="btn-icon" title="Editar" onclick="editarCorredor(${c.id})">✏️</button>
-                            <button class="btn-icon btn-danger" title="Deletar" onclick="deletarCorredor(${c.id})">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (error) {
-                console.error('Erro ao popular tabela de corredores admin:', error);
+            const tbody = document.getElementById('adminCorredoresBody');
+            if (!tbody) return;
+            if (!Array.isArray(corredores) || corredores.length === 0) {
+                showPlaceholderRow(tbody, 7);
+                return;
             }
+
+            tbody.innerHTML = corredores.map(c => `
+                <tr class="table-row">
+                    <td>${formatValue(c.id_corredores)}</td>
+                    <td><strong>${formatValue(c.nome)}</strong></td>
+                    <td>${formatValue(c.email)}</td>
+                    <td>${formatValue(c.turma)}</td>
+                    <td><span class="badge">${formatValue(c.equipe)}</span></td>
+                    <td><span class="badge badge-success">Ativo</span></td>
+                    <td class="actions-cell">
+                        <button class="btn-icon" title="Editar" onclick="editarCorredor(${c.id_corredores})">✏️</button>
+                        <button class="btn-icon btn-danger" title="Deletar" onclick="deletarCorredor(${c.id_corredores})">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
         function populateAdminUsuarios(usuarios) {
-            try {
-                const tbody = document.getElementById('adminUsuariosBody');
-                if (!tbody) {
-                    console.warn('Elemento adminUsuariosBody não encontrado');
-                    return;
-                }
-                tbody.innerHTML = usuarios.map(u => `
-                    <tr class="table-row">
-                        <td>${u.id}</td>
-                        <td><strong>${u.nome}</strong></td>
-                        <td>${u.email}</td>
-                        <td><span class="badge badge-info">${u.tipo}</span></td>
-                        <td>${u.dataCadastro}</td>
-                        <td><span class="badge badge-success">${u.status}</span></td>
-                        <td class="actions-cell">
-                            <button class="btn-icon" title="Editar" onclick="editarUsuario(${u.id})">✏️</button>
-                            <button class="btn-icon btn-danger" title="Deletar" onclick="deletarUsuario(${u.id})">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (error) {
-                console.error('Erro ao popular tabela de usuários admin:', error);
+            const tbody = document.getElementById('adminUsuariosBody');
+            if (!tbody) return;
+            if (!Array.isArray(usuarios) || usuarios.length === 0) {
+                showPlaceholderRow(tbody, 7);
+                return;
             }
+
+            tbody.innerHTML = usuarios.map(u => `
+                <tr class="table-row">
+                    <td>${formatValue(u.id_users)}</td>
+                    <td><strong>${formatValue(u.nome)}</strong></td>
+                    <td>${formatValue(u.email)}</td>
+                    <td><span class="badge badge-info">Usuário</span></td>
+                    <td>${formatValue(new Date(u.created_at).toLocaleDateString('pt-BR'))}</td>
+                    <td><span class="badge badge-success">Ativo</span></td>
+                    <td class="actions-cell">
+                        <button class="btn-icon" title="Editar" onclick="editarUsuario(${u.id_users})">✏️</button>
+                        <button class="btn-icon btn-danger" title="Deletar" onclick="deletarUsuario(${u.id_users})">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
         function populateAdminVoltas(voltas) {
-            try {
-                const tbody = document.getElementById('adminVoltasBody');
-                if (!tbody) {
-                    console.warn('Elemento adminVoltasBody não encontrado');
-                    return;
-                }
-                tbody.innerHTML = voltas.map(v => `
-                    <tr class="table-row">
-                        <td>${v.id}</td>
-                        <td>${v.corredorNome}</td>
-                        <td class="highlight"><strong>${v.tempo}s</strong></td>
-                        <td>${v.dataHora}</td>
-                        <td><span class="badge badge-success">${v.status}</span></td>
-                        <td class="actions-cell">
-                            <button class="btn-icon btn-danger" title="Deletar" onclick="deletarVolta(${v.id})">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (error) {
-                console.error('Erro ao popular tabela de voltas admin:', error);
+            const tbody = document.getElementById('adminVoltasBody');
+            if (!tbody) return;
+            if (!Array.isArray(voltas) || voltas.length === 0) {
+                showPlaceholderRow(tbody, 6);
+                return;
             }
+
+            tbody.innerHTML = voltas.map(v => `
+                <tr class="table-row">
+                    <td>${formatValue(v.id_corredor)}</td>
+                    <td>${formatValue(v.nome)}</td>
+                    <td class="highlight"><strong>${formatValue(v.tempo)}s</strong></td>
+                    <td>${formatValue(new Date(v.data).toLocaleString('pt-BR'))}</td>
+                    <td><span class="badge badge-success">Registrada</span></td>
+                    <td class="actions-cell">
+                        <button class="btn-icon btn-danger" title="Deletar" onclick="deletarVolta(${formatValue(v.id_corredor)})">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
         }
 
         function loadLogs() {
-            try {
-                const logs = [
-                    { tipo: 'info', mensagem: 'Sistema iniciado com sucesso', data: '2026-04-08 10:00:00' },
-                    { tipo: 'success', mensagem: 'Corredor João Silva realizou uma volta - 45.23s', data: '2026-04-08 10:05:23' },
-                    { tipo: 'success', mensagem: 'Corredor Maria Santos realizou uma volta - 44.87s', data: '2026-04-08 10:08:15' },
-                    { tipo: 'warning', mensagem: 'Login falhado para admin@raceflow.com (tentativa 1)', data: '2026-04-08 10:12:30' },
-                    { tipo: 'success', mensagem: 'Admin System efetuou login com sucesso', data: '2026-04-08 10:12:45' },
-                    { tipo: 'info', mensagem: 'Novo corredor adicionado: Rafael Martinez', data: '2026-04-08 10:20:10' },
-                    { tipo: 'success', mensagem: 'Dados do sistema exportados', data: '2026-04-08 10:25:00' },
-                ];
+            const logs = [
+                { tipo: 'info', mensagem: 'Sistema iniciado com sucesso', data: '2026-04-08 10:00:00' },
+                { tipo: 'success', mensagem: 'Admin painel carregado', data: '2026-04-08 10:12:45' },
+            ];
+            const container = document.getElementById('logsContainer');
+            if (!container) return;
+            container.innerHTML = logs.map(log => `
+                <div class="log-entry log-${log.tipo}">
+                    <span class="log-time">${log.data}</span>
+                    <span class="log-type">${log.tipo.toUpperCase()}</span>
+                    <span class="log-message">${log.mensagem}</span>
+                </div>
+            `).join('');
+        }
 
-                const container = document.getElementById('logsContainer');
-                if (container) {
-                    container.innerHTML = logs.map(log => `
-                        <div class="log-entry log-${log.tipo}">
-                            <span class="log-time">${log.data}</span>
-                            <span class="log-type">${log.tipo.toUpperCase()}</span>
-                            <span class="log-message">${log.mensagem}</span>
-                        </div>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Erro ao carregar logs:', error);
-            }
+        function setupAdminNavigation() {
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const section = this.dataset.section;
+                    if (!section) return;
+                    document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
+                    document.getElementById(section)?.classList.add('active');
+                    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
         }
 
         function setupSearch() {
-            try {
-                const searchCorredores = document.getElementById('searchCorredores');
-                const searchUsuarios = document.getElementById('searchUsuarios');
-                const searchVoltas = document.getElementById('searchVoltas');
+            const searchCorredores = document.getElementById('searchCorredores');
+            const searchUsuarios = document.getElementById('searchUsuarios');
+            const searchVoltas = document.getElementById('searchVoltas');
 
-                if (searchCorredores) {
-                    searchCorredores.addEventListener('input', function(e) {
-                        filterTable('adminCorredoresBody', e.target.value);
-                    });
-                }
-                
-                if (searchUsuarios) {
-                    searchUsuarios.addEventListener('input', function(e) {
-                        filterTable('adminUsuariosBody', e.target.value);
-                    });
-                }
-                
-                if (searchVoltas) {
-                    searchVoltas.addEventListener('input', function(e) {
-                        filterTable('adminVoltasBody', e.target.value);
-                    });
-                }
-            } catch (error) {
-                console.error('Erro ao setupar busca:', error);
+            if (searchCorredores) {
+                searchCorredores.addEventListener('input', e => filterTable('adminCorredoresBody', e.target.value));
+            }
+            if (searchUsuarios) {
+                searchUsuarios.addEventListener('input', e => filterTable('adminUsuariosBody', e.target.value));
+            }
+            if (searchVoltas) {
+                searchVoltas.addEventListener('input', e => filterTable('adminVoltasBody', e.target.value));
             }
         }
 
         function filterTable(tableBodyId, searchTerm) {
-            try {
-                const rows = document.querySelectorAll(`#${tableBodyId} tr`);
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(searchTerm.toLowerCase()) ? '' : 'none';
-                });
-            } catch (error) {
-                console.error('Erro ao filtrar tabela:', error);
-            }
+            const rows = document.querySelectorAll(`#${tableBodyId} tr`);
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm.toLowerCase()) ? '' : 'none';
+            });
         }
 
         function openAddCorredorModal() {
-            try {
-                const title = document.getElementById('corredorModalTitle');
-                const form = document.getElementById('adminCorredorForm');
-                const modal = document.getElementById('adminCorredorModal');
-                
-                if (title) title.textContent = 'Adicionar Novo Corredor';
-                if (form) form.reset();
-                if (modal) modal.classList.add('active');
-            } catch (error) {
-                console.error('Erro ao abrir modal de corredor:', error);
-            }
+            editingCorredorId = null;
+            document.getElementById('corredorModalTitle').textContent = 'Adicionar Novo Corredor';
+            document.getElementById('adminCorredorForm').reset();
+            document.getElementById('adminCorredorModal').classList.add('active');
         }
 
         function closeCorredorModal() {
-            try {
-                const modal = document.getElementById('adminCorredorModal');
-                if (modal) modal.classList.remove('active');
-            } catch (error) {
-                console.error('Erro ao fechar modal de corredor:', error);
-            }
+            editingCorredorId = null;
+            document.getElementById('corredorModalTitle').textContent = 'Adicionar Corredor';
+            document.getElementById('adminCorredorForm').reset();
+            document.getElementById('adminCorredorModal').classList.remove('active');
         }
 
         function openAddUsuarioModal() {
-            try {
-                const title = document.getElementById('usuarioModalTitle');
-                const form = document.getElementById('adminUsuarioForm');
-                const modal = document.getElementById('adminUsuarioModal');
-                
-                if (title) title.textContent = 'Adicionar Novo Usuário';
-                if (form) form.reset();
-                if (modal) modal.classList.add('active');
-            } catch (error) {
-                console.error('Erro ao abrir modal de usuário:', error);
-            }
+            editingUsuarioId = null;
+            document.getElementById('usuarioModalTitle').textContent = 'Adicionar Novo Usuário';
+            document.getElementById('adminUsuarioForm').reset();
+            document.getElementById('adminUsuarioModal').classList.add('active');
         }
 
         function closeUsuarioModal() {
-            try {
-                const modal = document.getElementById('adminUsuarioModal');
-                if (modal) modal.classList.remove('active');
-            } catch (error) {
-                console.error('Erro ao fechar modal de usuário:', error);
-            }
+            editingUsuarioId = null;
+            document.getElementById('usuarioModalTitle').textContent = 'Adicionar Usuário';
+            document.getElementById('adminUsuarioForm').reset();
+            document.getElementById('adminUsuarioModal').classList.remove('active');
         }
 
         function editarCorredor(id) {
-            try {
-                alert(`Editar corredor #${id} - (Integração com backend aqui)`);
-            } catch (error) {
-                console.error('Erro ao editar corredor:', error);
+            const corredor = allCorredores.find(c => c.id_corredores === id);
+            if (!corredor) {
+                alert('Corredor não encontrado');
+                return;
             }
+
+            editingCorredorId = id;
+            document.getElementById('corredorModalTitle').textContent = 'Editar Corredor';
+            document.getElementById('adminCorredorNome').value = corredor.nome;
+            document.getElementById('adminCorredorEmail').value = corredor.email;
+            document.getElementById('adminCorredorSenha').value = '';
+            document.getElementById('adminCorredorTurma').value = corredor.turma;
+            document.getElementById('adminCorredorEquipe').value = corredor.equipe;
+            document.getElementById('adminCorredorModal').classList.add('active');
         }
 
-        function deletarCorredor(id) {
+        async function deletarCorredor(id) {
+            if (!confirm('Tem certeza que deseja deletar este corredor?')) return;
+
             try {
-                if (confirm(`Tem certeza que deseja deletar o corredor #${id}?`)) {
-                    alert('Corredor deletado! (Integração com backend aqui)');
-                }
+                await deleteJSON(`/corredores/${id}`);
+                alert('Corredor deletado com sucesso!');
+                loadAdminData();
             } catch (error) {
-                console.error('Erro ao deletar corredor:', error);
+                alert('Erro ao deletar corredor: ' + error.message);
             }
         }
 
         function editarUsuario(id) {
-            try {
-                alert(`Editar usuário #${id} - (Integração com backend aqui)`);
-            } catch (error) {
-                console.error('Erro ao editar usuário:', error);
+            const usuario = allUsuarios.find(u => u.id_users === id);
+            if (!usuario) {
+                alert('Usuário não encontrado');
+                return;
             }
+
+            editingUsuarioId = id;
+            document.getElementById('usuarioModalTitle').textContent = 'Editar Usuário';
+            document.getElementById('adminUsuarioNome').value = usuario.nome;
+            document.getElementById('adminUsuarioEmail').value = usuario.email;
+            document.getElementById('adminUsuarioSenha').value = '';
+            document.getElementById('adminUsuarioTurma').value = usuario.turma;
+            document.getElementById('adminUsuarioModal').classList.add('active');
         }
 
-        function deletarUsuario(id) {
+        async function deletarUsuario(id) {
+            if (!confirm('Tem certeza que deseja deletar este usuário?')) return;
+
             try {
-                if (confirm(`Tem certeza que deseja deletar o usuário #${id}?`)) {
-                    alert('Usuário deletado! (Integração com backend aqui)');
-                }
+                await deleteJSON(`/usuarios/${id}`);
+                alert('Usuário deletado com sucesso!');
+                loadAdminData();
             } catch (error) {
-                console.error('Erro ao deletar usuário:', error);
+                alert('Erro ao deletar usuário: ' + error.message);
             }
         }
 
         function deletarVolta(id) {
-            try {
-                if (confirm(`Tem certeza que deseja deletar a volta #${id}?`)) {
-                    alert('Volta deletada! (Integração com backend aqui)');
-                }
-            } catch (error) {
-                console.error('Erro ao deletar volta:', error);
-            }
+            alert(`Função de deletar volta #${id} será adicionada em seguida`);
         }
 
         function exportarVoltas() {
-            try {
-                alert('Exportando dados... (Integração com backend aqui)');
-            } catch (error) {
-                console.error('Erro ao exportar voltas:', error);
-            }
+            alert('Exportação ainda não implementada');
         }
 
         function limparLogs() {
-            try {
-                if (confirm('Tem certeza que deseja limpar todos os logs?')) {
-                    const container = document.getElementById('logsContainer');
-                    if (container) {
-                        container.innerHTML = '<p style="text-align: center; color: #999;">Nenhum log disponível</p>';
-                    }
-                    alert('Logs limpos com sucesso!');
-                }
-            } catch (error) {
-                console.error('Erro ao limpar logs:', error);
-            }
+            const container = document.getElementById('logsContainer');
+            if (container) container.innerHTML = '<p style="text-align: center; color: #999;">Nenhum log disponível</p>';
+            alert('Logs limpos com sucesso!');
         }
 
         function logout() {
+            localStorage.removeItem('userLoggedIn');
+            window.location.href = 'index.html';
+        }
+
+        async function handleAddCorredor(event) {
+            event.preventDefault();
+            const nome = document.getElementById('adminCorredorNome').value.trim();
+            const email = document.getElementById('adminCorredorEmail').value.trim();
+            const senha = document.getElementById('adminCorredorSenha').value.trim();
+            const turma = document.getElementById('adminCorredorTurma').value;
+            const equipe = document.getElementById('adminCorredorEquipe').value;
+
+            if (!nome || !email || (!editingCorredorId && !senha) || !turma || !equipe) {
+                alert('Preencha todos os campos do corredor' + (editingCorredorId ? ' (deixe a senha vazia para não alterar)' : '') + '.');
+                return;
+            }
+
             try {
-                localStorage.removeItem('userLoggedIn');
-                window.location.href = 'index.html';
+                if (editingCorredorId) {
+                    const payload = { nome, email, turma, equipe };
+                    if (senha) payload.senha = senha;
+                    await sendJSON(`/corredores/${editingCorredorId}`, payload, 'PUT');
+                    alert('Corredor atualizado com sucesso.');
+                    editingCorredorId = null;
+                } else {
+                    await sendJSON('/corredores/cadastro', { nome, email, senha, turma, equipe });
+                    alert('Corredor adicionado com sucesso.');
+                }
+                closeCorredorModal();
+                loadAdminData();
             } catch (error) {
-                console.error('Erro ao fazer logout:', error);
-                window.location.href = 'index.html';
+                alert('Erro ao salvar corredor: ' + error.message);
             }
         }
 
-        const adminCorredorForm = document.getElementById('adminCorredorForm');
-        if (adminCorredorForm) {
-            adminCorredorForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                try {
-                    const nome = document.getElementById('adminCorredorNome').value;
-                    alert(`Corredor "${nome}" adicionado com sucesso! (Integração com backend aqui)`);
-                    closeCorredorModal();
-                    loadAdminData();
-                } catch (error) {
-                    console.error('Erro ao adicionar corredor:', error);
+        async function handleAddUsuario(event) {
+            event.preventDefault();
+            const nome = document.getElementById('adminUsuarioNome').value.trim();
+            const email = document.getElementById('adminUsuarioEmail').value.trim();
+            const senha = document.getElementById('adminUsuarioSenha').value.trim();
+            const turma = document.getElementById('adminUsuarioTurma').value;
+
+            if (!nome || !email || (!editingUsuarioId && !senha) || !turma) {
+                alert('Preencha todos os campos do usuário' + (editingUsuarioId ? ' (deixe a senha vazia para não alterar)' : '') + '.');
+                return;
+            }
+
+            try {
+                if (editingUsuarioId) {
+                    const payload = { nome, email, turma };
+                    if (senha) payload.senha = senha;
+                    await sendJSON(`/usuarios/${editingUsuarioId}`, payload, 'PUT');
+                    alert('Usuário atualizado com sucesso.');
+                    editingUsuarioId = null;
+                } else {
+                    await sendJSON('/usuarios/cadastro', { nome, email, senha, turma });
+                    alert('Usuário adicionado com sucesso.');
                 }
-            });
+                closeUsuarioModal();
+                loadAdminData();
+            } catch (error) {
+                alert('Erro ao salvar usuário: ' + error.message);
+            }
         }
 
-        const adminUsuarioForm = document.getElementById('adminUsuarioForm');
-        if (adminUsuarioForm) {
-            adminUsuarioForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                try {
-                    const nome = document.getElementById('adminUsuarioNome').value;
-                    alert(`Usuário "${nome}" adicionado com sucesso! (Integração com backend aqui)`);
-                    closeUsuarioModal();
-                    loadAdminData();
-                } catch (error) {
-                    console.error('Erro ao adicionar usuário:', error);
-                }
-            });
-        }
+        document.getElementById('adminCorredorForm')?.addEventListener('submit', handleAddCorredor);
+        document.getElementById('adminUsuarioForm')?.addEventListener('submit', handleAddUsuario);
     </script>
 </body>
 </html>
