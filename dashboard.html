@@ -126,7 +126,51 @@
 
                 <!-- Top Performers -->
                 <div class="dashboard-grid">
-                    <!-- Top 5 Melhores Voltas -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🏁 Ranking Geral de Pilotos</h2>
+                        </div>
+                        <div class="card-body">
+                            <table class="ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-col">Pos</th>
+                                        <th>Corredor</th>
+                                        <th>Equipe</th>
+                                        <th>Total de Voltas</th>
+                                        <th>Tempo Total</th>
+                                        <th>Média</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pilotRankingBody">
+                                    <!-- Será preenchido por JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>🏁 Ranking das 8 Pistas</h2>
+                        </div>
+                        <div class="card-body">
+                            <table class="ranking-table">
+                                <thead>
+                                    <tr>
+                                        <th class="rank-col">Pos</th>
+                                        <th>Pista</th>
+                                        <th>Total de Voltas</th>
+                                        <th>Tempo Total</th>
+                                        <th>Média (s)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trackRankingBody">
+                                    <!-- Será preenchido por JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div class="card-header">
                             <h2>🏆 Top 5 Melhores Voltas</h2>
@@ -152,7 +196,7 @@
                         <div class="card-header">
                             <h2>🥇 Ranking Geral de Voltas</h2>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body table-responsive">
                             <table class="ranking-table">
                                 <thead>
                                     <tr>
@@ -168,6 +212,15 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>🏁 Rankings por Pista</h2>
+                    </div>
+                    <div class="card-body track-pilot-rankings" id="trackPilotRankingsContainer">
+                        <p style="color: var(--text-secondary); margin: 0;">Os rankings de pilotos por pista serão exibidos aqui quando as voltas forem registradas.</p>
                     </div>
                 </div>
             </section>
@@ -229,17 +282,148 @@
             <!-- Section: Pista -->
             <section id="pista" class="dashboard-section">
                 <div class="section-header">
-                    <h1>Informações da Pista</h1>
+                    <h1>Pistas e Registro de Voltas</h1>
+                </div>
+
+                <div class="track-grid">
+                    <div class="card track-card" data-pista="1">
+                        <div class="card-header"><h2>Pista 1</h2></div>
+                        <div class="card-body">
+                            <form class="track-volta-form" data-pista="1">
+                                <div class="form-group"><label>Corredor</label><select class="corredor-select" required><option value="">Selecione o corredor</option></select></div>
+                                <div class="form-group"><label>Tempo (s)</label><input type="number" class="tempo-input" placeholder="Ex: 72.34" step="0.01" min="0.01" required></div>
+                                <div class="form-group"><label>Data / Hora</label><input type="datetime-local" class="data-input"></div>
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </form>
+                            <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
+                        </div>
+                    </div>
+                    <div class="card track-card" data-pista="2">
+                        <div class="card-header"><h2>Pista 2</h2></div>
+                        <div class="card-body">
+                            <form class="track-volta-form" data-pista="2">
+                                <div class="form-group"><label>Corredor</label><select class="corredor-select" required><option value="">Selecione o corredor</option></select></div>
+                                <div class="form-group"><label>Tempo (s)</label><input type="number" class="tempo-input" placeholder="Ex: 72.34" step="0.01" min="0.01" required></div>
+                                <div class="form-group"><label>Data / Hora</label><input type="datetime-local" class="data-input"></div>
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </form>
+                            <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
+                        </div>
+                    </div>
+                    <div class="card track-card" data-pista="3">
+                        <div class="card-header"><h2>Pista 3</h2></div>
+                        <div class="card-body">
+                            <form class="track-volta-form" data-pista="3">
+                                <div class="form-group"><label>Corredor</label><select class="corredor-select" required><option value="">Selecione o corredor</option></select></div>
+                                <div class="form-group"><label>Tempo (s)</label><input type="number" class="tempo-input" placeholder="Ex: 72.34" step="0.01" min="0.01" required></div>
+                                <div class="form-group"><label>Data / Hora</label><input type="datetime-local" class="data-input"></div>
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </form>
+                            <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
+                        </div>
+                    </div>
+                    <div class="card track-card" data-pista="4">
+                        <div class="card-header"><h2>Pista 4</h2></div>
+                        <div class="card-body">
+                            <form class="track-volta-form" data-pista="4">
+                                <div class="form-group"><label>Corredor</label><select class="corredor-select" required><option value="">Selecione o corredor</option></select></div>
+                                <div class="form-group"><label>Tempo (s)</label><input type="number" class="tempo-input" placeholder="Ex: 72.34" step="0.01" min="0.01" required></div>
+                                <div class="form-group"><label>Data / Hora</label><input type="datetime-local" class="data-input"></div>
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </form>
+                            <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
+                        </div>
+                    </div>
+                    <div class="card track-card" data-pista="5">
+                        <div class="card-header"><h2>Pista 5</h2></div>
+                        <div class="card-body">
+                            <form class="track-volta-form" data-pista="5">
+                                <div class="form-group"><label>Corredor</label><select class="corredor-select" required><option value="">Selecione o corredor</option></select></div>
+                                <div class="form-group"><label>Tempo (s)</label><input type="number" class="tempo-input" placeholder="Ex: 72.34" step="0.01" min="0.01" required></div>
+                                <div class="form-group"><label>Data / Hora</label><input type="datetime-local" class="data-input"></div>
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </form>
+                            <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
+                        </div>
+                    </div>
+                    <div class="card track-card" data-pista="6">
+                        <div class="card-header"><h2>Pista 6</h2></div>
+                        <div class="card-body">
+                            <form class="track-volta-form" data-pista="6">
+                                <div class="form-group"><label>Corredor</label><select class="corredor-select" required><option value="">Selecione o corredor</option></select></div>
+                                <div class="form-group"><label>Tempo (s)</label><input type="number" class="tempo-input" placeholder="Ex: 72.34" step="0.01" min="0.01" required></div>
+                                <div class="form-group"><label>Data / Hora</label><input type="datetime-local" class="data-input"></div>
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </form>
+                            <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
+                        </div>
+                    </div>
+                    <div class="card track-card" data-pista="7">
+                        <div class="card-header"><h2>Pista 7</h2></div>
+                        <div class="card-body">
+                            <form class="track-volta-form" data-pista="7">
+                                <div class="form-group"><label>Corredor</label><select class="corredor-select" required><option value="">Selecione o corredor</option></select></div>
+                                <div class="form-group"><label>Tempo (s)</label><input type="number" class="tempo-input" placeholder="Ex: 72.34" step="0.01" min="0.01" required></div>
+                                <div class="form-group"><label>Data / Hora</label><input type="datetime-local" class="data-input"></div>
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </form>
+                            <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
+                        </div>
+                    </div>
+                    <div class="card track-card" data-pista="8">
+                        <div class="card-header"><h2>Pista 8</h2></div>
+                        <div class="card-body">
+                            <form class="track-volta-form" data-pista="8">
+                                <div class="form-group"><label>Corredor</label><select class="corredor-select" required><option value="">Selecione o corredor</option></select></div>
+                                <div class="form-group"><label>Tempo (s)</label><input type="number" class="tempo-input" placeholder="Ex: 72.34" step="0.01" min="0.01" required></div>
+                                <div class="form-group"><label>Data / Hora</label><input type="datetime-local" class="data-input"></div>
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </form>
+                            <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card">
                     <div class="card-header">
-                        <h2>📍 Detalhes da Pista</h2>
+                        <h2>🧮 Resumo de Tempos</h2>
                     </div>
                     <div class="card-body">
-                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
-                            Adicione as informações da pista aqui
-                        </p>
+                    <div class="card-header">
+                        <h2>🧮 Resumo de Tempos</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="track-global-summary">
+                            <div class="summary-item">
+                                <p>Total de Voltas Registradas</p>
+                                <strong id="pistaTotalVoltas">0</strong>
+                            </div>
+                            <div class="summary-item">
+                                <p>Tempo Total de Todas as Pistas</p>
+                                <strong id="pistaTempoTotal">0.00s</strong>
+                            </div>
+                        </div>
+                        <div class="track-summary-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pista</th>
+                                        <th>Total de Voltas</th>
+                                        <th>Tempo Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trackSummaryBody">
+                                    <tr><td>1</td><td>0</td><td>0.00s</td></tr>
+                                    <tr><td>2</td><td>0</td><td>0.00s</td></tr>
+                                    <tr><td>3</td><td>0</td><td>0.00s</td></tr>
+                                    <tr><td>4</td><td>0</td><td>0.00s</td></tr>
+                                    <tr><td>5</td><td>0</td><td>0.00s</td></tr>
+                                    <tr><td>6</td><td>0</td><td>0.00s</td></tr>
+                                    <tr><td>7</td><td>0</td><td>0.00s</td></tr>
+                                    <tr><td>8</td><td>0</td><td>0.00s</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -296,6 +480,7 @@
                 checkAuthAndInitialize();
                 setupSectionNavigation();
                 loadDashboardData();
+                initializeTrackDashboard();
                 updateDateTime();
                 setInterval(updateDateTime, 1000);
             } catch (error) {
@@ -431,6 +616,77 @@
             }
         }
 
+        const TRACK_STORAGE_KEY = 'trackVoltasData';
+
+        async function initializeTrackDashboard() {
+            ensureTrackDataInitialized();
+            await loadTrackCorredores();
+            initializeTrackForms();
+            refreshTrackSummaryUI();
+        }
+
+        async function loadTrackCorredores() {
+            const selects = document.querySelectorAll('.track-card .corredor-select');
+            if (!selects.length) return;
+
+            try {
+                const corredores = await fetchJSON('/corredores');
+                const list = Array.isArray(corredores) ? corredores : [];
+                selects.forEach(select => {
+                    select.innerHTML = '<option value="">Selecione o corredor</option>';
+                    list.forEach(corredor => {
+                        const option = document.createElement('option');
+                        const id = corredor.id_corredores || corredor.id;
+                        option.value = id;
+                        option.textContent = `${corredor.nome} (${corredor.equipe || 'Sem equipe'})`;
+                        option.dataset.nome = corredor.nome || '';
+                        option.dataset.equipe = corredor.equipe || '';
+                        select.appendChild(option);
+                    });
+                });
+            } catch (error) {
+                selects.forEach(select => {
+                    select.innerHTML = '<option value="">Não foi possível carregar corredores</option>';
+                });
+            }
+        }
+
+        function getTrackData() {
+            try {
+                const raw = localStorage.getItem(TRACK_STORAGE_KEY);
+                const data = raw ? JSON.parse(raw) : null;
+                if (Array.isArray(data) && data.length === 8) {
+                    return data;
+                }
+            } catch (error) {
+                console.error('Falha ao ler dados de pista:', error);
+            }
+            const initial = Array.from({ length: 8 }, (_, index) => ({
+                pista: index + 1,
+                voltas: []
+            }));
+            localStorage.setItem(TRACK_STORAGE_KEY, JSON.stringify(initial));
+            return initial;
+        }
+
+        function ensureTrackDataInitialized() {
+            const raw = localStorage.getItem(TRACK_STORAGE_KEY);
+            if (!raw) {
+                getTrackData();
+            }
+        }
+
+        function saveTrackData(data) {
+            localStorage.setItem(TRACK_STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function initializeTrackForms() {
+            document.querySelectorAll('.track-volta-form').forEach(form => {
+                form.removeEventListener('submit', handleTrackFormSubmit);
+                form.addEventListener('submit', handleTrackFormSubmit);
+            });
+        }
+
         async function loadDashboardData() {
             await Promise.all([
                 loadTotalCorredores(),
@@ -442,6 +698,278 @@
             ]).catch(error => {
                 console.error('Erro ao carregar dados do dashboard:', error);
             });
+        }
+
+        function handleTrackFormSubmit(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const pista = Number(form.dataset.pista);
+            const select = form.querySelector('.corredor-select');
+            const tempoInput = form.querySelector('.tempo-input');
+            const dataInput = form.querySelector('.data-input');
+
+            if (!select || !tempoInput) {
+                showToast('Formulário de pista inválido.', 'error');
+                return;
+            }
+
+            if (!select.value) {
+                showToast('Selecione um corredor antes de registrar a volta.', 'error');
+                return;
+            }
+
+            const tempo = parseFloat(tempoInput.value);
+            if (Number.isNaN(tempo) || tempo <= 0) {
+                showToast('Informe um tempo válido maior que zero.', 'error');
+                return;
+            }
+
+            const option = select.selectedOptions[0];
+            const corredorNome = option?.dataset?.nome || select.options[select.selectedIndex]?.text || 'Corredor';
+            const corredorEquipe = option?.dataset?.equipe || '';
+            const dataValue = dataInput && dataInput.value ? new Date(dataInput.value).toISOString() : new Date().toISOString();
+
+            const trackData = getTrackData();
+            const track = trackData.find(item => item.pista === pista);
+            if (!track) {
+                showToast('Pista inválida.', 'error');
+                return;
+            }
+
+            track.voltas.push({
+                id: Date.now().toString() + Math.random().toString(16).slice(2),
+                corredor_id: select.value,
+                nome: corredorNome,
+                equipe: corredorEquipe,
+                tempo,
+                data: dataValue
+            });
+
+            saveTrackData(trackData);
+            tempoInput.value = '';
+            if (dataInput) dataInput.value = '';
+            showToast(`Volta registrada na Pista ${pista}`, 'success');
+            refreshTrackSummaryUI();
+        }
+
+        function refreshTrackSummaryUI() {
+            const trackData = getTrackData();
+            const totalVoltas = trackData.reduce((sum, track) => sum + track.voltas.length, 0);
+            const totalTempo = trackData.reduce((sum, track) => sum + track.voltas.reduce((trackSum, volta) => trackSum + (Number(volta.tempo) || 0), 0), 0);
+
+            const totalVoltasElement = document.getElementById('pistaTotalVoltas');
+            const totalTempoElement = document.getElementById('pistaTempoTotal');
+            if (totalVoltasElement) totalVoltasElement.textContent = totalVoltas;
+            if (totalTempoElement) totalTempoElement.textContent = `${totalTempo.toFixed(2)}s`;
+
+            document.querySelectorAll('.track-card').forEach(card => {
+                const pista = Number(card.dataset.pista);
+                const track = trackData.find(item => item.pista === pista);
+                const trackCount = track?.voltas.length || 0;
+                const trackTotal = track?.voltas.reduce((sum, volta) => sum + (Number(volta.tempo) || 0), 0) || 0;
+                const countElement = card.querySelector('.track-count');
+                const totalElement = card.querySelector('.track-total');
+                if (countElement) countElement.textContent = trackCount;
+                if (totalElement) totalElement.textContent = `${trackTotal.toFixed(2)}s`;
+            });
+
+            const summaryBody = document.getElementById('trackSummaryBody');
+            if (summaryBody) {
+                summaryBody.innerHTML = trackData.map(track => {
+                    const trackTotal = track.voltas.reduce((sum, volta) => sum + (Number(volta.tempo) || 0), 0);
+                    return `
+                        <tr>
+                            <td>${track.pista}</td>
+                            <td>${track.voltas.length}</td>
+                            <td>${trackTotal.toFixed(2)}s</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            refreshTrackRankingUI(trackData);
+            refreshPilotRankingsUI(trackData);
+        }
+
+        function refreshTrackRankingUI(trackData) {
+            const tbody = document.getElementById('trackRankingBody');
+            if (!tbody) return;
+
+            const ranking = trackData
+                .map(track => {
+                    const totalTime = track.voltas.reduce((sum, volta) => sum + (Number(volta.tempo) || 0), 0);
+                    return {
+                        pista: track.pista,
+                        laps: track.voltas.length,
+                        totalTime,
+                        averageTime: track.voltas.length ? totalTime / track.voltas.length : 0
+                    };
+                })
+                .sort((a, b) => a.pista - b.pista);
+
+            if (ranking.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">Nenhuma volta registrada ainda</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = ranking.map(track => `
+                <tr>
+                    <td>${track.pista}</td>
+                    <td>Pista ${track.pista}</td>
+                    <td>${track.laps}</td>
+                    <td>${track.totalTime.toFixed(2)}s</td>
+                    <td>${track.averageTime.toFixed(2)}s</td>
+                </tr>
+            `).join('');
+        }
+
+        function getPilotRankings(trackData) {
+            const pilots = {};
+
+            trackData.forEach(track => {
+                track.voltas.forEach(volta => {
+                    const pilotKey = volta.corredor_id || volta.nome;
+                    if (!pilotKey) return;
+
+                    if (!pilots[pilotKey]) {
+                        pilots[pilotKey] = {
+                            id: volta.corredor_id || pilotKey,
+                            nome: volta.nome || `Piloto ${pilotKey}`,
+                            equipe: volta.equipe || 'Sem equipe',
+                            totalTime: 0,
+                            laps: 0,
+                            bestLap: Number.POSITIVE_INFINITY,
+                            tracks: {}
+                        };
+                    }
+
+                    const pilot = pilots[pilotKey];
+                    const tempo = Number(volta.tempo) || 0;
+                    pilot.totalTime += tempo;
+                    pilot.laps += 1;
+                    pilot.bestLap = Math.min(pilot.bestLap, tempo);
+
+                    if (!pilot.tracks[track.pista]) {
+                        pilot.tracks[track.pista] = {
+                            pista: track.pista,
+                            totalTime: 0,
+                            laps: 0,
+                            bestLap: Number.POSITIVE_INFINITY
+                        };
+                    }
+
+                    const trackPilot = pilot.tracks[track.pista];
+                    trackPilot.totalTime += tempo;
+                    trackPilot.laps += 1;
+                    trackPilot.bestLap = Math.min(trackPilot.bestLap, tempo);
+                });
+            });
+
+            const overall = Object.values(pilots).sort((a, b) => {
+                if (a.totalTime !== b.totalTime) return a.totalTime - b.totalTime;
+                if (b.laps !== a.laps) return b.laps - a.laps;
+                return a.bestLap - b.bestLap;
+            }).map((pilot, index) => ({
+                rank: index + 1,
+                ...pilot,
+                averageTime: pilot.laps ? pilot.totalTime / pilot.laps : 0
+            }));
+
+            const perTrack = Array.from({ length: 8 }, (_, index) => index + 1).reduce((obj, pista) => {
+                obj[pista] = [];
+                return obj;
+            }, {});
+
+            Object.values(pilots).forEach(pilot => {
+                Object.values(pilot.tracks).forEach(trackPilot => {
+                    perTrack[trackPilot.pista] = perTrack[trackPilot.pista] || [];
+                    perTrack[trackPilot.pista].push({
+                        nome: pilot.nome,
+                        equipe: pilot.equipe,
+                        totalTime: trackPilot.totalTime,
+                        laps: trackPilot.laps,
+                        bestLap: trackPilot.bestLap,
+                        averageTime: trackPilot.laps ? trackPilot.totalTime / trackPilot.laps : 0
+                    });
+                });
+            });
+
+            Object.keys(perTrack).forEach(pista => {
+                perTrack[pista].sort((a, b) => {
+                    if (a.totalTime !== b.totalTime) return a.totalTime - b.totalTime;
+                    if (b.laps !== a.laps) return b.laps - a.laps;
+                    return a.bestLap - b.bestLap;
+                });
+            });
+
+            return { overall, perTrack };
+        }
+
+        function refreshPilotRankingsUI(trackData) {
+            const rankings = getPilotRankings(trackData);
+            const overallBody = document.getElementById('pilotRankingBody');
+            const container = document.getElementById('trackPilotRankingsContainer');
+
+            if (overallBody) {
+                if (rankings.overall.length === 0) {
+                    overallBody.innerHTML = '<tr><td colspan="6">Nenhum piloto registrado ainda</td></tr>';
+                } else {
+                    overallBody.innerHTML = rankings.overall.map(pilot => `
+                        <tr>
+                            <td>${pilot.rank}</td>
+                            <td>${pilot.nome}</td>
+                            <td>${pilot.equipe}</td>
+                            <td>${pilot.laps}</td>
+                            <td>${pilot.totalTime.toFixed(2)}s</td>
+                            <td>${pilot.averageTime.toFixed(2)}s</td>
+                        </tr>
+                    `).join('');
+                }
+            }
+
+            if (container) {
+                container.innerHTML = Object.keys(rankings.perTrack).sort((a, b) => Number(a) - Number(b)).map(pista => {
+                    const pilots = rankings.perTrack[pista];
+                    const hasPilots = pilots && pilots.length > 0;
+                    const rows = hasPilots ? pilots.slice(0, 5).map((pilot, index) => `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${pilot.nome}</td>
+                            <td>${pilot.equipe}</td>
+                            <td>${pilot.laps}</td>
+                            <td>${pilot.totalTime.toFixed(2)}s</td>
+                            <td>${pilot.averageTime.toFixed(2)}s</td>
+                        </tr>
+                    `).join('') : `
+                        <tr>
+                            <td colspan="6" style="color: var(--text-secondary);">Nenhuma volta registrada nesta pista.</td>
+                        </tr>
+                    `;
+
+                    return `
+                        <div class="track-pilot-table-card">
+                            <h3>Pista ${pista} - Top Pilotos</h3>
+                            <div class="table-responsive">
+                                <table class="ranking-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="rank-col">Pos</th>
+                                            <th>Corredor</th>
+                                            <th>Equipe</th>
+                                            <th>Voltas</th>
+                                            <th>Tempo Total</th>
+                                            <th>Média</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${rows}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
         }
 
         async function loadTotalCorredores() {

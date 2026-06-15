@@ -91,6 +91,21 @@
                         <span class="input-icon">🔒</span>
                     </div>
 
+                    <div class="form-group">
+                        <label for="equipeCorredor">Equipe</label>
+                        <select id="equipeCorredor" required>
+                            <option value="" disabled selected>Selecione sua equipe</option>
+                            <option value="Septem Racing">Septem Racing - Grécia</option>
+                            <option value="Cowabunga">Cowabunga - Itália</option>
+                            <option value="Sakura Racing">Sakura Racing - Japão</option>
+                            <option value="Windspeed">Windspeed - Estado Islamico</option>
+                            <option value="Apex Racing">Apex Racing - Estados Unidos</option>
+                            <option value="Racing Angels">Racing Angels - Brasil</option>
+                            <option value="Kerberus">Kerberus - Grécia</option>
+                            <option value="Lightning McQueen">Lightning McQueen - França</option>
+                        </select>
+                    </div>
+
                     <div class="form-remember">
                         <input type="checkbox" id="rememberCorredor">
                         <label for="rememberCorredor">Lembrar-me</label>
@@ -216,6 +231,7 @@
             e.preventDefault();
             const email = document.getElementById('emailCorredor').value.trim();
             const senha = document.getElementById('senhaCorredor').value.trim();
+            const equipe = (document.getElementById('equipeCorredor') && document.getElementById('equipeCorredor').value) ? document.getElementById('equipeCorredor').value.trim() : '';
 
             if (!email || !senha) {
                 showErrorMessage('Email e senha são obrigatórios');
@@ -230,7 +246,7 @@
             }
 
             try {
-                const data = await sendRequest('/corredores/login', { email, senha });
+                const data = await sendRequest('/corredores/login', { email, senha, equipe });
                 const corredorId = data.corredor?.id || data.corredor?.id_corredores;
                 setUserSession({
                     type: 'corredor',
@@ -238,6 +254,7 @@
                     id_corredores: corredorId,
                     email,
                     name: data.corredor?.nome || email.split('@')[0],
+                    equipe: equipe || data.corredor?.equipe || null,
                     token: data.token
                 });
                 showSuccessMessage('Login realizado com sucesso');
