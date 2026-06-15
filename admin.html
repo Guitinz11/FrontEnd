@@ -136,9 +136,29 @@
                         <div class="header-actions">
                             <input type="search" placeholder="Buscar volta..." id="searchVoltas" class="search-input">
                             <button class="btn btn-secondary" onclick="exportarVoltas()">📥 Exportar</button>
+                            <button class="btn btn-danger" onclick="limparVoltas()">🗑️ Limpar Voltas</button>
                         </div>
                     </div>
                     <div class="card-body">
+                        <form id="adminVoltaForm" class="form-row" style="margin-bottom: 1.5rem; gap: 1rem; align-items: flex-end;">
+                            <div class="form-group" style="flex: 2;">
+                                <label for="adminCorredorSelect">Corredor</label>
+                                <select id="adminCorredorSelect" required>
+                                    <option value="">Selecione um corredor</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label for="adminTempoVolta">Tempo (s)</label>
+                                <input type="number" id="adminTempoVolta" placeholder="Ex: 72.34" step="0.01" min="0.01" required>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label for="adminDataVolta">Data/Hora</label>
+                                <input type="datetime-local" id="adminDataVolta">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </div>
+                        </form>
                         <table class="admin-table data-table">
                             <thead>
                                 <tr>
@@ -362,10 +382,10 @@
 
         async function loadAdminData() {
             try {
-                const [corredores, usuarios, voltasData] = await Promise.all([
+                const [corredores, usuarios, voltas] = await Promise.all([
                     fetchJSON('/corredores'),
                     fetchJSON('/usuarios'),
-                    fetchJSON('/voltas/top5-melhores-voltas').catch(() => ({ ranking: [] }))
+                    fetchJSON('/voltas')
                 ]);
 
                 allCorredores = corredores;
@@ -373,7 +393,8 @@
 
                 populateAdminCorredores(corredores);
                 populateAdminUsuarios(usuarios);
-                populateAdminVoltas(voltasData.ranking || []);
+                populateCorredorSelect(corredores);
+                populateAdminVoltas(voltas);
                 loadLogs();
             } catch (error) {
                 console.error('Erro ao carregar dados admin:', error);
@@ -439,13 +460,13 @@
 
             tbody.innerHTML = voltas.map(v => `
                 <tr class="table-row">
-                    <td>${formatValue(v.id_corredor)}</td>
+                    <td>${formatValue(v.id)}</td>
                     <td>${formatValue(v.nome)}</td>
                     <td class="highlight"><strong>${formatValue(v.tempo)}s</strong></td>
-                    <td>${formatValue(new Date(v.data).toLocaleString('pt-BR'))}</td>
+                    <td>${formatValue(v.data ? new Date(v.data).toLocaleString('pt-BR') : '__')}</td>
                     <td><span class="badge badge-success">Registrada</span></td>
                     <td class="actions-cell">
-                        <button class="btn-icon btn-danger" title="Deletar" onclick="deletarVolta(${formatValue(v.id_corredor)})">🗑️</button>
+                        <button class="btn-icon btn-danger" title="Deletar" onclick="deletarVolta(${formatValue(v.id)})">🗑️</button>
                     </td>
                 </tr>
             `).join('');
@@ -511,6 +532,12 @@
             document.getElementById('corredorModalTitle').textContent = 'Adicionar Novo Corredor';
             document.getElementById('adminCorredorForm').reset();
             document.getElementById('adminCorredorModal').classList.add('active');
+        }
+
+        function populateCorredorSelect(corredores) {
+            const select = document.getElementById('adminCorredorSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">Selecione um corredor</option>' + (Array.isArray(corredores) ? corredores.map(c => `\n                <option value="${c.id_corredores}">${c.nome} (${c.equipe})</option>`).join('') : '');
         }
 
         function closeCorredorModal() {
@@ -595,6 +622,41 @@
             alert(`Função de deletar volta #${id} será adicionada em seguida`);
         }
 
+        async function handleAdminVoltaSubmit(event) {
+            event.preventDefault();
+
+            const corredorId = document.getElementById('adminCorredorSelect').value;
+            const tempo = parseFloat(document.getElementById('adminTempoVolta').value);
+            const dataValue = document.getElementById('adminDataVolta').value;
+            const data = dataValue ? new Date(dataValue).toISOString() : null;
+
+            if (!corredorId || Number.isNaN(tempo) || tempo <= 0) {
+                alert('Escolha um corredor e informe um tempo válido.');
+                return;
+            }
+
+            try {
+                await sendJSON('/voltas', { corredor_id: corredorId, tempo, data });
+                alert('Volta registrada com sucesso!');
+                document.getElementById('adminVoltaForm').reset();
+                loadAdminData();
+            } catch (error) {
+                alert('Erro ao registrar volta: ' + error.message);
+            }
+        }
+
+        async function limparVoltas() {
+            if (!confirm('Tem certeza que deseja apagar todas as voltas registradas? Esta ação não pode ser desfeita.')) return;
+
+            try {
+                await deleteJSON('/voltas/limpar');
+                alert('Todas as voltas foram removidas com sucesso.');
+                loadAdminData();
+            } catch (error) {
+                alert('Erro ao limpar voltas: ' + error.message);
+            }
+        }
+
         function exportarVoltas() {
             alert('Exportação ainda não implementada');
         }
@@ -673,6 +735,7 @@
 
         document.getElementById('adminCorredorForm')?.addEventListener('submit', handleAddCorredor);
         document.getElementById('adminUsuarioForm')?.addEventListener('submit', handleAddUsuario);
+        document.getElementById('adminVoltaForm')?.addEventListener('submit', handleAdminVoltaSubmit);
     </script>
 </body>
 </html>

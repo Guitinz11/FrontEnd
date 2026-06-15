@@ -148,49 +148,26 @@
                         </div>
                     </div>
 
-                    <!-- Ranking por Equipe -->
                     <div class="card">
                         <div class="card-header">
-                            <h2>🎯 Ranking por Equipe</h2>
+                            <h2>🥇 Ranking Geral de Voltas</h2>
                         </div>
                         <div class="card-body">
                             <table class="ranking-table">
                                 <thead>
                                     <tr>
                                         <th class="rank-col">Pos</th>
+                                        <th>Corredor</th>
                                         <th>Equipe</th>
-                                        <th>Pilotos</th>
-                                        <th>Voltas</th>
+                                        <th>Total de Voltas</th>
+                                        <th>Melhor Volta</th>
                                     </tr>
                                 </thead>
-                                <tbody id="rankingEquipeBody">
+                                <tbody id="rankingGeralBody">
                                     <!-- Será preenchido por JavaScript -->
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Melhor volta por Corredor -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>⚡ Melhor Volta por Corredor (Top 10)</h2>
-                    </div>
-                    <div class="card-body">
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Corredor</th>
-                                    <th>Equipe</th>
-                                    <th>Turma</th>
-                                    <th>Melhor Volta</th>
-                                    <th>Total de Voltas</th>
-                                </tr>
-                            </thead>
-                            <tbody id="melhorVoltaCorradorBody">
-                                <!-- Será preenchido por JavaScript -->
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </section>
@@ -248,36 +225,6 @@
                 </div>
             </section>
 
-            <!-- Section: Ranking -->
-            <section id="ranking" class="dashboard-section">
-                <div class="section-header">
-                    <h1>Rankings Gerais</h1>
-                </div>
-
-                <div class="dashboard-grid">
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>🥇 Ranking Geral de Corredores</h2>
-                        </div>
-                        <div class="card-body">
-                            <table class="ranking-table">
-                                <thead>
-                                    <tr>
-                                        <th class="rank-col">Pos</th>
-                                        <th>Corredor</th>
-                                        <th>Equipe</th>
-                                        <th>Voltas</th>
-                                        <th>Média</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="rankingGeralBody">
-                                    <!-- Será preenchido por JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
             <!-- Section: Pista -->
             <section id="pista" class="dashboard-section">
@@ -305,6 +252,20 @@
 
                 <div class="card">
                     <div class="card-body">
+                        <form id="voltaForm" class="form-row" style="margin-bottom: 1.5rem; gap: 1rem;">
+                            <div class="form-group" style="flex: 2;">
+                                <label for="tempoVolta">Tempo da Volta (segundos)</label>
+                                <input type="number" id="tempoVolta" placeholder="Ex: 72.34" step="0.01" min="0.01" required>
+                            </div>
+                            <div class="form-group" style="flex: 2;">
+                                <label for="dataVolta">Data / Hora</label>
+                                <input type="datetime-local" id="dataVolta">
+                            </div>
+                            <div class="form-group" style="flex: 1; align-self: end;">
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </div>
+                        </form>
+
                         <table class="data-table">
                             <thead>
                                 <tr>
@@ -353,6 +314,24 @@
                 return data;
             } catch (error) {
                 console.error('Erro fetchJSON:', error);
+                throw error;
+            }
+        }
+
+        async function postJSON(path, payload) {
+            try {
+                const response = await fetch(`${API_URL}${path}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.erro || data.message || 'Erro ao enviar dados');
+                }
+                return data;
+            } catch (error) {
+                console.error('Erro postJSON:', error);
                 throw error;
             }
         }
@@ -457,8 +436,8 @@
                 loadTotalCorredores(),
                 loadTotalUsuarios(),
                 loadTotalVoltas(),
-                loadMelhorVoltaGeral(),
                 loadTopVoltas(),
+                loadVoltasHistory(),
                 loadRankingGeral()
             ]).catch(error => {
                 console.error('Erro ao carregar dados do dashboard:', error);
@@ -495,16 +474,6 @@
             }
         }
 
-        async function loadMelhorVoltaGeral() {
-            const element = document.getElementById('melhorVoltaGeral');
-            try {
-                const data = await fetchJSON('/voltas/melhor-volta-geral');
-                element.textContent = formatValue(data?.melhor_volta ? `${data.melhor_volta}s` : '__');
-            } catch (error) {
-                element.textContent = '__';
-            }
-        }
-
         async function loadTopVoltas() {
             const tbody = document.getElementById('topVoltasBody');
             try {
@@ -524,6 +493,66 @@
                 `).join('');
             } catch (error) {
                 tbody.innerHTML = createPlaceholderRows(5, 4);
+            }
+        }
+
+        async function loadVoltasHistory() {
+            const tbody = document.getElementById('voltasTableBody');
+            try {
+                const user = JSON.parse(localStorage.getItem('userLoggedIn') || '{}');
+                const corredorId = user.id || user.id_corredores || user.corredor_id;
+                const query = user.type === 'corredor' && corredorId ? `?corredor_id=${corredorId}` : '';
+                const rows = await fetchJSON(`/voltas${query}`);
+                if (!Array.isArray(rows) || rows.length === 0) {
+                    tbody.innerHTML = createPlaceholderRows(5, 5);
+                    return;
+                }
+                tbody.innerHTML = rows.map(item => `
+                    <tr>
+                        <td>${formatValue(item.id)}</td>
+                        <td>${formatValue(item.nome)}</td>
+                        <td>${formatValue(item.tempo)}s</td>
+                        <td>${formatValue(item.data ? new Date(item.data).toLocaleString('pt-BR') : '__')}</td>
+                        <td>${formatValue('Registrada')}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                tbody.innerHTML = createPlaceholderRows(5, 5);
+            }
+        }
+
+        async function submitVolta(event) {
+            event.preventDefault();
+            try {
+                const user = JSON.parse(localStorage.getItem('userLoggedIn') || '{}');
+                const corredorId = user.id || user.id_corredores || user.corredor_id;
+                if (!user || user.type !== 'corredor' || !corredorId) {
+                    showToast('É necessário estar logado como corredor para registrar voltas.', 'error');
+                    return;
+                }
+
+                const tempoInput = document.getElementById('tempoVolta');
+                const dataInput = document.getElementById('dataVolta');
+                const tempo = parseFloat(tempoInput.value);
+                const data = dataInput.value ? new Date(dataInput.value).toISOString() : null;
+
+                if (Number.isNaN(tempo) || tempo <= 0) {
+                    showToast('Informe um tempo válido maior que zero.', 'error');
+                    return;
+                }
+
+                await postJSON('/voltas', {
+                    corredor_id: user.id || user.id_corredores || user.corredor_id,
+                    tempo,
+                    data
+                });
+
+                showToast('Volta registrada com sucesso!', 'success');
+                tempoInput.value = '';
+                dataInput.value = '';
+                await Promise.all([loadTotalVoltas(), loadVoltasHistory(), loadTopVoltas(), loadRankingGeral()]);
+            } catch (error) {
+                showToast(error.message || 'Erro ao registrar volta', 'error');
             }
         }
 
@@ -595,6 +624,8 @@
             document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('active'));
             section.classList.add('active');
         }
+
+        document.getElementById('voltaForm')?.addEventListener('submit', submitVolta);
 
         function logout() {
             localStorage.removeItem('userLoggedIn');

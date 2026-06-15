@@ -294,9 +294,11 @@ const API_URL = 'http://localhost:3000';
             }
             
             try {
-                await sendCadastro('/corredores/cadastro', { nome, email, senha, turma, equipe });
+                const data = await sendCadastro('/corredores/cadastro', { nome, email, senha, turma, equipe });
                 localStorage.setItem('userLoggedIn', JSON.stringify({
                     type: 'corredor',
+                    id: data.id,
+                    id_corredores: data.id,
                     email,
                     name: nome,
                     turma,

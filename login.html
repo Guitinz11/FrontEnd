@@ -231,7 +231,15 @@
 
             try {
                 const data = await sendRequest('/corredores/login', { email, senha });
-                setUserSession({ type: 'corredor', email, name: data.corredor?.nome || email.split('@')[0], token: data.token });
+                const corredorId = data.corredor?.id || data.corredor?.id_corredores;
+                setUserSession({
+                    type: 'corredor',
+                    id: corredorId,
+                    id_corredores: corredorId,
+                    email,
+                    name: data.corredor?.nome || email.split('@')[0],
+                    token: data.token
+                });
                 showSuccessMessage('Login realizado com sucesso');
                 setTimeout(() => { window.location.href = 'dashboard.html'; }, 800);
             } catch (error) {
