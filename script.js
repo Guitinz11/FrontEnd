@@ -67,6 +67,63 @@ document.addEventListener('DOMContentLoaded', function() {
             e.target.classList.remove('active');
         }
     });
+
+    // Anima entrada suave de blocos conforme aparecem na tela
+    const revealTargets = document.querySelectorAll(`
+        .home-section,
+        .metric-card,
+        .stat-card,
+        .driver-card,
+        .identity-card,
+        .video-frame,
+        .auth-form,
+        .auth-visual,
+        .dashboard-header,
+        .section-header,
+        .card,
+        .analytics-insight-card
+    `);
+
+    if ('IntersectionObserver' in window) {
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            threshold: 0.12,
+            rootMargin: '0px 0px -60px 0px'
+        });
+
+        revealTargets.forEach(target => {
+            target.classList.add('reveal-on-scroll');
+            revealObserver.observe(target);
+        });
+    } else {
+        revealTargets.forEach(target => target.classList.add('is-visible'));
+    }
+
+    // Atualiza o item ativo do menu da home ao navegar por seções internas
+    const homeSections = document.querySelectorAll('.container-home section[id]');
+    const homeLinks = document.querySelectorAll('.container-home .nav-link[href^="#"]');
+
+    if (homeSections.length && homeLinks.length && 'IntersectionObserver' in window) {
+        const navObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    homeLinks.forEach(link => {
+                        link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`);
+                    });
+                }
+            });
+        }, {
+            threshold: 0.45
+        });
+
+        homeSections.forEach(section => navObserver.observe(section));
+    }
 });
 
 // Notificação Toast (simples)

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RaceFlow - Sistema de Corridas</title>
+        <title>RaceFlow - Sistema de Corridas</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -18,7 +18,9 @@
                     <span class="logo-text">Race<span>Flow</span></span>
                 </a>
                 <div class="navbar-links">
-                    <a href="index.html" class="nav-link active">In&iacute;cio</a>
+                    <a href="#inicio" class="nav-link active">In&iacute;cio</a>
+                    <a href="#pilotos" class="nav-link">Pilotos</a>
+                    <a href="#video" class="nav-link">V&iacute;deo</a>
                     <a href="login.html" class="nav-link">Login</a>
                     <a href="cadastro.html" class="nav-link">Cadastro</a>
                     <a href="#sobre-nos" class="nav-link">Sobre N&oacute;s</a>
@@ -27,7 +29,7 @@
         </nav>
 
         <main>
-            <section class="hero home-hero">
+            <section id="inicio" class="hero home-hero">
                 <div class="home-glow home-glow-main"></div>
                 <div class="home-glow home-glow-track"></div>
 
@@ -40,6 +42,12 @@
                         <p class="hero-subtitle">
                             Controle pilotos, equipes, voltas e rankings em uma central veloz com visual inspirado na Apex Storm.
                         </p>
+
+                        <div class="hero-telemetry" aria-label="Destaques RaceFlow">
+                            <span><strong>0.01s</strong> precis&atilde;o</span>
+                            <span><strong>8</strong> pistas</span>
+                            <span><strong>Live</strong> ranking</span>
+                        </div>
 
                         <div class="hero-buttons">
                             <a href="login.html" class="btn btn-primary">
