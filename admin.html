@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - RaceFlow</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,10 +14,10 @@
         <!-- Navbar -->
         <nav class="navbar navbar-dark">
             <div class="navbar-container">
-                <div class="navbar-logo">
-                    <span class="logo-icon">🏁</span>
-                    <span class="logo-text">RaceFlow</span>
-                </div>
+                <a href="index.html" class="navbar-logo brand-logo">
+                    <img src="img/logo.png" alt="RaceFlow">
+                    <span class="logo-text">Race<span>Flow</span></span>
+                </a>
                 <div class="navbar-links">
                     <a href="dashboard.html" class="nav-link">Dashboard</a>
                     <a href="admin.html" class="nav-link active">Admin</a>
@@ -44,6 +47,10 @@
                 <a href="#rankings" class="menu-item" data-section="rankings">
                     <span class="menu-icon">🏅</span>
                     <span class="menu-text">Rankings</span>
+                </a>
+                <a href="#analises" class="menu-item" data-section="analises">
+                    <span class="menu-icon">📈</span>
+                    <span class="menu-text">Análises</span>
                 </a>
                 <a href="#logs" class="menu-item" data-section="logs">
                     <span class="menu-icon">📋</span>
@@ -249,6 +256,112 @@
                 </div>
             </section>
 
+            <!-- Section: Análises -->
+            <section id="analises" class="dashboard-section">
+                <div class="section-header">
+                    <div>
+                        <h2>Análises do Carrinho</h2>
+                        <p class="section-subtitle">Diferenças de tempo, consistência, evolução e pistas onde o carrinho pode estar perdendo desempenho.</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="loadAdminData()">Atualizar dados</button>
+                </div>
+
+                <div class="stats-grid analytics-kpis">
+                    <div class="stat-card">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Melhor Volta</span>
+                            <span class="stat-value" id="analyticsBestLap">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏱️</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Média Geral</span>
+                            <span class="stat-value" id="analyticsAverage">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">↕️</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Maior Diferença</span>
+                            <span class="stat-value" id="analyticsGap">--</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏎️</div>
+                        <div class="stat-info">
+                            <span class="stat-label">Voltas Analisadas</span>
+                            <span class="stat-value" id="analyticsLapCount">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-insights" id="analyticsInsights">
+                    <!-- Preenchido por JS -->
+                </div>
+
+                <div class="analytics-grid">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Média de Tempo por Pista</h3>
+                        </div>
+                        <div class="card-body chart-body">
+                            <canvas id="trackAverageChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Diferença para a Melhor Volta</h3>
+                        </div>
+                        <div class="card-body chart-body">
+                            <canvas id="driverGapChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Comparativo por Equipe</h3>
+                        </div>
+                        <div class="card-body chart-body">
+                            <canvas id="teamAverageChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <h3>Evolução das Últimas Voltas</h3>
+                        </div>
+                        <div class="card-body chart-body">
+                            <canvas id="recentTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Diagnóstico por Piloto</h3>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="admin-table data-table">
+                            <thead>
+                                <tr>
+                                    <th>Piloto</th>
+                                    <th>Equipe</th>
+                                    <th>Melhor</th>
+                                    <th>Média</th>
+                                    <th>Diferença</th>
+                                    <th>Consistência</th>
+                                    <th>Tendência</th>
+                                </tr>
+                            </thead>
+                            <tbody id="driverDiagnosticsBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <!-- Section: Logs -->
             <section id="logs" class="dashboard-section">
                 <div class="section-header">
@@ -377,6 +490,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
     <script>
         const API_URL = 'http://localhost:3000';
@@ -443,6 +557,7 @@
         let allUsuarios = [];
         let editingCorredorId = null;
         let editingUsuarioId = null;
+        const chartInstances = {};
 
         function formatValue(value) {
             if (value === null || value === undefined || value === '') return '__';
@@ -456,13 +571,14 @@
 
         async function loadAdminData() {
             try {
-                const [corredores, usuarios, voltas, geralData, pistasData, summary] = await Promise.all([
+                const [corredores, usuarios, voltas, geralData, pistasData, summary, analytics] = await Promise.all([
                     fetchJSON('/corredores'),
                     fetchJSON('/usuarios'),
                     fetchJSON('/voltas'),
                     fetchJSON('/voltas/ranking'),
                     fetchJSON('/voltas/ranking/pistas'),
-                    fetchJSON('/voltas/summary')
+                    fetchJSON('/voltas/summary'),
+                    fetchJSON('/voltas/analytics/admin')
                 ]);
 
                 allCorredores = corredores;
@@ -475,11 +591,194 @@
                 populateRankingGeral(geralData.ranking || []);
                 populateRankingPistas(pistasData.ranking || {});
                 populateRankSummary(summary, geralData.ranking || []);
+                renderAnalytics(analytics);
                 loadLogs();
             } catch (error) {
                 console.error('Erro ao carregar dados admin:', error);
                 alert('Não foi possível carregar dados administrativos: ' + error.message);
             }
+        }
+
+        function seconds(value) {
+            const number = Number(value || 0);
+            return `${number.toFixed(2)}s`;
+        }
+
+        function setText(id, value) {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        }
+
+        function destroyChart(id) {
+            if (chartInstances[id]) {
+                chartInstances[id].destroy();
+                delete chartInstances[id];
+            }
+        }
+
+        function createChart(id, config) {
+            const canvas = document.getElementById(id);
+            if (!canvas || typeof Chart === 'undefined') return;
+            destroyChart(id);
+            chartInstances[id] = new Chart(canvas, {
+                ...config,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#f0eeff', font: { family: 'Rajdhani' } } },
+                        tooltip: {
+                            backgroundColor: 'rgba(5, 5, 10, 0.92)',
+                            borderColor: 'rgba(157, 80, 255, 0.5)',
+                            borderWidth: 1,
+                            titleColor: '#f0eeff',
+                            bodyColor: '#d9d6ea'
+                        },
+                        ...(config.options?.plugins || {})
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#b7b3ca' },
+                            grid: { color: 'rgba(123, 47, 255, 0.12)' }
+                        },
+                        y: {
+                            ticks: { color: '#b7b3ca' },
+                            grid: { color: 'rgba(123, 47, 255, 0.12)' }
+                        },
+                        ...(config.options?.scales || {})
+                    },
+                    ...config.options
+                }
+            });
+        }
+
+        function renderAnalytics(analytics) {
+            const overview = analytics?.overview || {};
+            setText('analyticsBestLap', overview.melhor_tempo ? seconds(overview.melhor_tempo) : '--');
+            setText('analyticsAverage', overview.media_geral ? seconds(overview.media_geral) : '--');
+            setText('analyticsGap', overview.amplitude ? seconds(overview.amplitude) : '--');
+            setText('analyticsLapCount', overview.total_voltas ?? '--');
+
+            renderAnalyticsInsights(analytics?.insights || []);
+            renderDriverDiagnostics(analytics?.drivers || []);
+            renderAnalyticsCharts(analytics || {});
+        }
+
+        function renderAnalyticsInsights(insights) {
+            const container = document.getElementById('analyticsInsights');
+            if (!container) return;
+            if (!insights.length) {
+                container.innerHTML = '<div class="analytics-insight-card"><strong>Sem dados suficientes</strong><span>Registre voltas para liberar comparações de tempo, consistência e evolução do carrinho.</span></div>';
+                return;
+            }
+
+            container.innerHTML = insights.map(insight => `
+                <div class="analytics-insight-card">
+                    <strong>${formatValue(insight.titulo)}</strong>
+                    <em>${formatValue(insight.valor)}</em>
+                    <span>${formatValue(insight.detalhe)}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderDriverDiagnostics(drivers) {
+            const tbody = document.getElementById('driverDiagnosticsBody');
+            if (!tbody) return;
+            if (!Array.isArray(drivers) || drivers.length === 0) {
+                showPlaceholderRow(tbody, 7);
+                return;
+            }
+
+            tbody.innerHTML = drivers.map(driver => `
+                <tr>
+                    <td><strong>${formatValue(driver.nome)}</strong></td>
+                    <td><span class="badge">${formatValue(driver.equipe)}</span></td>
+                    <td>${seconds(driver.melhor_tempo)}</td>
+                    <td>${seconds(driver.media)}</td>
+                    <td class="highlight">+${seconds(driver.diferenca_para_melhor_geral)}</td>
+                    <td>${seconds(driver.consistencia)}</td>
+                    <td><span class="badge ${driver.tendencia === 'melhorando' ? 'badge-success' : driver.tendencia === 'piorando' ? 'badge-warning' : 'badge-info'}">${formatValue(driver.tendencia)}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAnalyticsCharts(analytics) {
+            const purple = 'rgba(157, 80, 255, 0.82)';
+            const purpleSoft = 'rgba(123, 47, 255, 0.26)';
+            const white = '#f0eeff';
+            const tracks = analytics.byTrack || [];
+            const teams = analytics.byTeam || [];
+            const drivers = (analytics.drivers || []).slice(0, 10);
+            const trend = analytics.recentTrend || [];
+
+            createChart('trackAverageChart', {
+                type: 'bar',
+                data: {
+                    labels: tracks.map(item => `Pista ${item.pista}`),
+                    datasets: [{
+                        label: 'Média (s)',
+                        data: tracks.map(item => item.media),
+                        backgroundColor: purpleSoft,
+                        borderColor: purple,
+                        borderWidth: 1
+                    }]
+                }
+            });
+
+            createChart('driverGapChart', {
+                type: 'bar',
+                data: {
+                    labels: drivers.map(item => item.nome),
+                    datasets: [{
+                        label: 'Diferença para melhor volta (s)',
+                        data: drivers.map(item => item.diferenca_para_melhor_geral),
+                        backgroundColor: 'rgba(240, 238, 255, 0.1)',
+                        borderColor: purple,
+                        borderWidth: 1
+                    }]
+                },
+                options: { indexAxis: 'y' }
+            });
+
+            createChart('teamAverageChart', {
+                type: 'radar',
+                data: {
+                    labels: teams.map(item => item.equipe),
+                    datasets: [{
+                        label: 'Média por equipe (s)',
+                        data: teams.map(item => item.media),
+                        backgroundColor: purpleSoft,
+                        borderColor: purple,
+                        pointBackgroundColor: white
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(123, 47, 255, 0.18)' },
+                            grid: { color: 'rgba(123, 47, 255, 0.16)' },
+                            pointLabels: { color: '#b7b3ca' },
+                            ticks: { color: '#b7b3ca', backdropColor: 'transparent' }
+                        }
+                    }
+                }
+            });
+
+            createChart('recentTrendChart', {
+                type: 'line',
+                data: {
+                    labels: trend.map(item => `${item.corredor} P${item.pista}`),
+                    datasets: [{
+                        label: 'Tempo das últimas voltas (s)',
+                        data: trend.map(item => item.tempo),
+                        borderColor: purple,
+                        backgroundColor: purpleSoft,
+                        pointBackgroundColor: white,
+                        tension: 0.35,
+                        fill: true
+                    }]
+                }
+            });
         }
 
         function populateAdminCorredores(corredores) {

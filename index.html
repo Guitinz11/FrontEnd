@@ -4,58 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RaceFlow - Sistema de Corridas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container-home">
-        <!--Barra de Navegaçao-->
-        <nav class="navbar">
+        <nav class="navbar home-navbar">
             <div class="navbar-container">
-                <div class="navbar-logo">
-                    <span class="logo-icon">🏁</span>
-                    <span class="logo-text">RaceFlow</span>
-                </div>
+                <a href="index.html" class="navbar-logo home-logo">
+                    <img src="img/logo.png" alt="RaceFlow">
+                    <span class="logo-text">Race<span>Flow</span></span>
+                </a>
                 <div class="navbar-links">
-                    <a href="index.html" class="nav-link active">Início</a>
+                    <a href="index.html" class="nav-link active">In&iacute;cio</a>
                     <a href="login.html" class="nav-link">Login</a>
                     <a href="cadastro.html" class="nav-link">Cadastro</a>
+                    <a href="sobre-nos.html" class="nav-link">Sobre N&oacute;s</a>
                 </div>
             </div>
         </nav>
 
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1 class="hero-title">
-                        Bem-vindo ao <span class="gradient-text">RaceFlow</span>
-                    </h1>
-                    <p class="hero-subtitle">
-                        O sistema completo para gerenciar corridas, pilotos e voltas
-                    </p>
-                    <div class="hero-buttons">
-                        <a href="login.html" class="btn btn-primary">
-                            <span>Entrar no Sistema</span>
-                            <span class="btn-arrow">→</span>
-                        </a>
-                        <a href="cadastro.html" class="btn btn-secondary">
-                            Criar Conta
-                        </a>
-                        <a href="sobre-nos.html" class="btn btn-outline">
-                            Sobre Nós
-                        </a>
+        <main>
+            <section class="hero home-hero">
+                <div class="home-glow home-glow-main"></div>
+                <div class="home-glow home-glow-track"></div>
+
+                <div class="hero-content">
+                    <div class="hero-text">
+                        <p class="hero-badge">Sistema oficial de corridas</p>
+                        <h1 class="hero-title">
+                            Gerencie a <span>tempestade</span> da pista
+                        </h1>
+                        <p class="hero-subtitle">
+                            Controle pilotos, equipes, voltas e rankings em uma central veloz com visual inspirado na Apex Storm.
+                        </p>
+
+                        <div class="hero-buttons">
+                            <a href="login.html" class="btn btn-primary">
+                                <span>Entrar no Sistema</span>
+                                <span class="btn-arrow">-&gt;</span>
+                            </a>
+                            <a href="cadastro.html" class="btn btn-secondary">Criar Conta</a>
+                            <a href="sobre-nos.html" class="btn btn-outline">Sobre N&oacute;s</a>
+                        </div>
+                    </div>
+
+                    <div class="hero-visual" aria-label="Identidade RaceFlow">
+                        <div class="speed-ring ring-outer"></div>
+                        <div class="speed-ring ring-middle"></div>
+                        <div class="speed-ring ring-inner"></div>
+                        <div class="hero-logo-card">
+                            <img src="img/logo.png" alt="RaceFlow Logo">
+                        </div>
                     </div>
                 </div>
-                <div class="hero-visual">
-                    <div class="neon-circle circle-1"></div>
-                    <div class="neon-circle circle-2"></div>
-                    <div class="neon-circle circle-3"></div>
-                    <div class="hero-icon"><img src="/img/logo.png" alt="RaceFlow Logo"></div>
-                </div>  
-            </div>
-        </section>
 
-            
+                <div class="home-metrics" aria-label="Recursos do sistema">
+                    <div class="metric-card">
+                        <strong>Pilotos</strong>
+                        <span>Cadastro e controle por equipe</span>
+                    </div>
+                    <div class="metric-card">
+                        <strong>Voltas</strong>
+                        <span>Tempos registrados com precis&atilde;o</span>
+                    </div>
+                    <div class="metric-card">
+                        <strong>Ranking</strong>
+                        <span>Compara&ccedil;&atilde;o r&aacute;pida de desempenho</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
