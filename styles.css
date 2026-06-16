@@ -609,12 +609,15 @@ body {
 .form-group select {
     width: 100%;
     padding: 0.75rem 1rem 0.75rem 2.5rem;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.95);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    color: var(--text-primary);
+    color: #FFFFFF;
     font-size: 1rem;
     transition: var(--transition);
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }
 
 .form-group input:focus,
@@ -622,7 +625,12 @@ body {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
-    background: rgba(139, 92, 246, 0.05);
+    background: rgba(0, 0, 0, 0.95);
+}
+
+.form-group select option {
+    background: #000000;
+    color: #FFFFFF;
 }
 
 .form-group input::placeholder {
