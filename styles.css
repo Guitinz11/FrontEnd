@@ -1202,21 +1202,45 @@ body {
     background: rgba(139, 92, 246, 0.08);
 }
 
-.data-table td,
-.ranking-table td,
-.admin-table td {
-    padding: 1.1rem 1rem;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    transition: var(--transition);
-}
+    .ranking-track-card {
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        border-radius: 14px;
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+        background: rgba(17, 24, 39, 0.8);
+    }
 
-.data-table tbody tr,
-.ranking-table tbody tr,
-.admin-table tbody tr {
-    transition: var(--transition);
-}
+    .track-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
 
+    .track-header h4 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    .track-badge {
+        padding: 0.5rem 0.85rem;
+        border-radius: 999px;
+        background: rgba(139, 92, 246, 0.15);
+        color: var(--text-primary);
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .track-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .small-text {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
 .data-table tbody tr:hover,
 .ranking-table tbody tr:hover,
 .admin-table tbody tr:hover {

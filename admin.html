@@ -41,6 +41,10 @@
                     <span class="menu-icon">⚡</span>
                     <span class="menu-text">Voltas</span>
                 </a>
+                <a href="#rankings" class="menu-item" data-section="rankings">
+                    <span class="menu-icon">🏅</span>
+                    <span class="menu-text">Rankings</span>
+                </a>
                 <a href="#logs" class="menu-item" data-section="logs">
                     <span class="menu-icon">📋</span>
                     <span class="menu-text">Logs</span>
@@ -148,6 +152,20 @@
                                 </select>
                             </div>
                             <div class="form-group" style="flex: 1;">
+                                <label for="adminPistaVolta">Pista</label>
+                                <select id="adminPistaVolta" required>
+                                <option value="">Selecione a pista</option>
+                                <option value="1">Pista 1</option>
+                                <option value="2">Pista 2</option>
+                                <option value="3">Pista 3</option>
+                                <option value="4">Pista 4</option>
+                                <option value="5">Pista 5</option>
+                                <option value="6">Pista 6</option>
+                                <option value="7">Pista 7</option>
+                                <option value="8">Pista 8</option>
+                            </select>
+                            </div>
+                            <div class="form-group" style="flex: 1;">
                                 <label for="adminTempoVolta">Tempo (s)</label>
                                 <input type="number" id="adminTempoVolta" placeholder="Ex: 72.34" step="0.01" min="0.01" required>
                             </div>
@@ -175,6 +193,59 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </section>
+
+            <!-- Section: Rankings -->
+            <section id="rankings" class="dashboard-section">
+                <div class="section-header">
+                    <h2>Rankings dos Corredores</h2>
+                    <p class="section-subtitle">Ranking por pista e ranking geral com soma de tempos.</p>
+                </div>
+
+                <div class="stats" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                    <div class="stat-item">
+                        <div class="stat-number" id="rankingTotalPilotos">--</div>
+                        <div class="stat-label">Pilotos ranking</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="rankingTotalVoltas">--</div>
+                        <div class="stat-label">Voltas registradas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="rankingTotalTempo">--</div>
+                        <div class="stat-label">Tempo total (s)</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Ranking Geral</h3>
+                        <input type="search" placeholder="Buscar piloto..." id="searchRankingGeral" class="search-input">
+                    </div>
+                    <div class="card-body">
+                        <table class="admin-table data-table">
+                            <thead>
+                                <tr>
+                                    <th>Posição</th>
+                                    <th>Piloto</th>
+                                    <th>Equipe</th>
+                                    <th>Voltas</th>
+                                    <th>Tempo Total (s)</th>
+                                    <th>Melhor Volta</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rankingGeralBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Ranking por Pista</h3>
+                        <p class="section-subtitle">Veja os melhores tempos por cada uma das 8 pistas.</p>
+                    </div>
+                    <div class="card-body" id="rankingPistasBody"></div>
                 </div>
             </section>
 
@@ -219,8 +290,8 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                            <label for="turmaCorredor">Turma</label>
-                            <select id="turmaCorredor" required>
+                            <label for="adminCorredorTurma">Turma</label>
+                            <select id="adminCorredorTurma" required>
                                 <option value="">Selecione uma turma</option>
                                 <option value="Turma A">IDEV 3</option>
                                 <option value="Turma B">IDEV 4</option>
@@ -285,8 +356,8 @@
                     </select>
                 </div>
                <div class="form-group">
-                            <label for="turmaCorredor">Turma</label>
-                            <select id="turmaCorredor" required>
+                            <label for="adminUsuarioTurma">Turma</label>
+                            <select id="adminUsuarioTurma" required>
                                 <option value="">Selecione uma turma</option>
                                 <option value="Turma A">IDEV 3</option>
                                 <option value="Turma B">IDEV 4</option>
@@ -385,10 +456,13 @@
 
         async function loadAdminData() {
             try {
-                const [corredores, usuarios, voltas] = await Promise.all([
+                const [corredores, usuarios, voltas, geralData, pistasData, summary] = await Promise.all([
                     fetchJSON('/corredores'),
                     fetchJSON('/usuarios'),
-                    fetchJSON('/voltas')
+                    fetchJSON('/voltas'),
+                    fetchJSON('/voltas/ranking'),
+                    fetchJSON('/voltas/ranking/pistas'),
+                    fetchJSON('/voltas/summary')
                 ]);
 
                 allCorredores = corredores;
@@ -398,6 +472,9 @@
                 populateAdminUsuarios(usuarios);
                 populateCorredorSelect(corredores);
                 populateAdminVoltas(voltas);
+                populateRankingGeral(geralData.ranking || []);
+                populateRankingPistas(pistasData.ranking || {});
+                populateRankSummary(summary, geralData.ranking || []);
                 loadLogs();
             } catch (error) {
                 console.error('Erro ao carregar dados admin:', error);
@@ -415,15 +492,15 @@
 
             tbody.innerHTML = corredores.map(c => `
                 <tr class="table-row">
-                    <td>${formatValue(c.id_corredores)}</td>
+                    <td>${formatValue(c.id)}</td>
                     <td><strong>${formatValue(c.nome)}</strong></td>
                     <td>${formatValue(c.email)}</td>
                     <td>${formatValue(c.turma)}</td>
                     <td><span class="badge">${formatValue(c.equipe)}</span></td>
                     <td><span class="badge badge-success">Ativo</span></td>
                     <td class="actions-cell">
-                        <button class="btn-icon" title="Editar" onclick="editarCorredor(${c.id_corredores})">✏️</button>
-                        <button class="btn-icon btn-danger" title="Deletar" onclick="deletarCorredor(${c.id_corredores})">🗑️</button>
+                        <button class="btn-icon" title="Editar" onclick="editarCorredor(${c.id})">✏️</button>
+                        <button class="btn-icon btn-danger" title="Deletar" onclick="deletarCorredor(${c.id})">🗑️</button>
                     </td>
                 </tr>
             `).join('');
@@ -475,6 +552,74 @@
             `).join('');
         }
 
+        function populateRankSummary(summary, geralRanking = []) {
+            const totalPilotos = Array.isArray(geralRanking) ? geralRanking.length : '--';
+            document.getElementById('rankingTotalPilotos').textContent = totalPilotos;
+            document.getElementById('rankingTotalVoltas').textContent = summary?.total_voltas ?? '--';
+            document.getElementById('rankingTotalTempo').textContent = summary?.tempo_total !== undefined ? Number(summary.tempo_total).toFixed(2) : '--';
+        }
+
+        function populateRankingGeral(ranking) {
+            const tbody = document.getElementById('rankingGeralBody');
+            if (!tbody) return;
+            if (!Array.isArray(ranking) || ranking.length === 0) {
+                showPlaceholderRow(tbody, 6);
+                return;
+            }
+
+            tbody.innerHTML = ranking.map(item => `
+                <tr class="table-row">
+                    <td>#${item.rank}</td>
+                    <td><strong>${item.nome}</strong> <span class="small-text">(${item.turma})</span></td>
+                    <td>${item.equipe || '—'}</td>
+                    <td>${item.total_voltas}</td>
+                    <td>${item.tempo_total.toFixed(2)}s</td>
+                    <td>${item.melhor_volta?.toFixed?.(2) ?? '—'}s</td>
+                </tr>
+            `).join('');
+        }
+
+        function populateRankingPistas(rankings) {
+            const container = document.getElementById('rankingPistasBody');
+            if (!container) return;
+            const pistas = Object.keys(rankings).sort((a, b) => Number(a) - Number(b));
+            if (pistas.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999;">Nenhum ranking de pista disponível</p>';
+                return;
+            }
+
+            container.innerHTML = pistas.map(pista => `
+                <div class="ranking-track-card">
+                    <div class="track-header">
+                        <h4>Pista ${pista}</h4>
+                        <span class="track-badge">${rankings[pista].length} pilotos</span>
+                    </div>
+                    <div class="track-table-wrapper">
+                        <table class="admin-table data-table compact">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Corredor</th>
+                                    <th>Tempo total</th>
+                                    <th>Melhor volta</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rankings[pista].map((item, index) => `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${item.nome}</td>
+                                        <td>${item.tempo_total.toFixed(2)}s</td>
+                                        <td>${item.melhor_volta?.toFixed?.(2) ?? '—'}s</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         function loadLogs() {
             const logs = [
                 { tipo: 'info', mensagem: 'Sistema iniciado com sucesso', data: '2026-04-08 10:00:00' },
@@ -510,6 +655,7 @@
             const searchCorredores = document.getElementById('searchCorredores');
             const searchUsuarios = document.getElementById('searchUsuarios');
             const searchVoltas = document.getElementById('searchVoltas');
+            const searchRankingGeral = document.getElementById('searchRankingGeral');
 
             if (searchCorredores) {
                 searchCorredores.addEventListener('input', e => filterTable('adminCorredoresBody', e.target.value));
@@ -519,6 +665,9 @@
             }
             if (searchVoltas) {
                 searchVoltas.addEventListener('input', e => filterTable('adminVoltasBody', e.target.value));
+            }
+            if (searchRankingGeral) {
+                searchRankingGeral.addEventListener('input', e => filterTable('rankingGeralBody', e.target.value));
             }
         }
 
@@ -540,7 +689,7 @@
         function populateCorredorSelect(corredores) {
             const select = document.getElementById('adminCorredorSelect');
             if (!select) return;
-            select.innerHTML = '<option value="">Selecione um corredor</option>' + (Array.isArray(corredores) ? corredores.map(c => `\n                <option value="${c.id_corredores}">${c.nome} (${c.equipe})</option>`).join('') : '');
+            select.innerHTML = '<option value="">Selecione um corredor</option>' + (Array.isArray(corredores) ? corredores.map(c => `\n                <option value="${c.id}">${c.nome} (${c.equipe})</option>`).join('') : '');
         }
 
         function closeCorredorModal() {
@@ -565,7 +714,7 @@
         }
 
         function editarCorredor(id) {
-            const corredor = allCorredores.find(c => c.id_corredores === id);
+            const corredor = allCorredores.find(c => c.id === id);
             if (!corredor) {
                 alert('Corredor não encontrado');
                 return;
@@ -621,8 +770,15 @@
             }
         }
 
-        function deletarVolta(id) {
-            alert(`Função de deletar volta #${id} será adicionada em seguida`);
+        async function deletarVolta(id) {
+            if (!confirm('Tem certeza que deseja deletar esta volta?')) return;
+            try {
+                await deleteJSON(`/voltas/${id}`);
+                alert('Volta deletada com sucesso!');
+                loadAdminData();
+            } catch (error) {
+                alert('Erro ao deletar volta: ' + error.message);
+            }
         }
 
         async function handleAdminVoltaSubmit(event) {
@@ -630,16 +786,17 @@
 
             const corredorId = document.getElementById('adminCorredorSelect').value;
             const tempo = parseFloat(document.getElementById('adminTempoVolta').value);
+            const pista = Number(document.getElementById('adminPistaVolta').value);
             const dataValue = document.getElementById('adminDataVolta').value;
             const data = dataValue ? new Date(dataValue).toISOString() : null;
 
-            if (!corredorId || Number.isNaN(tempo) || tempo <= 0) {
-                alert('Escolha um corredor e informe um tempo válido.');
+            if (!corredorId || Number.isNaN(tempo) || tempo <= 0 || Number.isNaN(pista) || pista < 1) {
+                alert('Escolha um corredor, pista e informe um tempo válido.');
                 return;
             }
 
             try {
-                await sendJSON('/voltas', { corredor_id: corredorId, tempo, data });
+                await sendJSON('/voltas', { corredor_id: corredorId, tempo, data, pista });
                 alert('Volta registrada com sucesso!');
                 document.getElementById('adminVoltaForm').reset();
                 loadAdminData();
@@ -660,8 +817,20 @@
             }
         }
 
-        function exportarVoltas() {
-            alert('Exportação ainda não implementada');
+        async function exportarVoltas() {
+            try {
+                const voltas = await fetchJSON('/voltas');
+                exportToCSV(voltas.map(v => ({
+                    ID: v.id,
+                    Corredor: v.nome,
+                    Tempo: v.tempo,
+                    Data: v.data,
+                    Pista: v.pista,
+                    Equipe: v.equipe
+                })), 'voltas.csv');
+            } catch (error) {
+                alert('Erro ao exportar voltas: ' + error.message);
+            }
         }
 
         function limparLogs() {

@@ -616,13 +616,21 @@
             }
         }
 
-        const TRACK_STORAGE_KEY = 'trackVoltasData';
-
         async function initializeTrackDashboard() {
-            ensureTrackDataInitialized();
             await loadTrackCorredores();
             initializeTrackForms();
-            refreshTrackSummaryUI();
+            initializeSSE();
+            await loadAllTrackData();
+        }
+
+        async function loadAllTrackData() {
+            await Promise.all([
+                loadTrackSummary(),
+                loadTrackRankings(),
+                loadTrackPilotRankings()
+            ]).catch(error => {
+                console.error('Erro ao carregar dados de pista:', error);
+            });
         }
 
         async function loadTrackCorredores() {
@@ -639,8 +647,6 @@
                         const id = corredor.id_corredores || corredor.id;
                         option.value = id;
                         option.textContent = `${corredor.nome} (${corredor.equipe || 'Sem equipe'})`;
-                        option.dataset.nome = corredor.nome || '';
-                        option.dataset.equipe = corredor.equipe || '';
                         select.appendChild(option);
                     });
                 });
@@ -651,39 +657,39 @@
             }
         }
 
-        function getTrackData() {
-            try {
-                const raw = localStorage.getItem(TRACK_STORAGE_KEY);
-                const data = raw ? JSON.parse(raw) : null;
-                if (Array.isArray(data) && data.length === 8) {
-                    return data;
-                }
-            } catch (error) {
-                console.error('Falha ao ler dados de pista:', error);
-            }
-            const initial = Array.from({ length: 8 }, (_, index) => ({
-                pista: index + 1,
-                voltas: []
-            }));
-            localStorage.setItem(TRACK_STORAGE_KEY, JSON.stringify(initial));
-            return initial;
-        }
-
-        function ensureTrackDataInitialized() {
-            const raw = localStorage.getItem(TRACK_STORAGE_KEY);
-            if (!raw) {
-                getTrackData();
-            }
-        }
-
-        function saveTrackData(data) {
-            localStorage.setItem(TRACK_STORAGE_KEY, JSON.stringify(data));
-        }
-
         function initializeTrackForms() {
             document.querySelectorAll('.track-volta-form').forEach(form => {
                 form.removeEventListener('submit', handleTrackFormSubmit);
                 form.addEventListener('submit', handleTrackFormSubmit);
+            });
+        }
+
+        function initializeSSE() {
+            if (!window.EventSource) return;
+            try {
+                const source = new EventSource(`${API_URL}/voltas/stream`);
+                source.addEventListener('nova_volta', async () => {
+                    await refreshAllData();
+                });
+                source.onerror = error => {
+                    console.warn('SSE falhou:', error);
+                };
+            } catch (error) {
+                console.error('Erro ao iniciar SSE:', error);
+            }
+        }
+
+        async function refreshAllData() {
+            await Promise.all([
+                loadTotalVoltas(),
+                loadTopVoltas(),
+                loadVoltasHistory(),
+                loadRankingGeral(),
+                loadTrackSummary(),
+                loadTrackRankings(),
+                loadTrackPilotRankings()
+            ]).catch(error => {
+                console.error('Erro ao recarregar dados SSE:', error);
             });
         }
 
@@ -694,13 +700,16 @@
                 loadTotalVoltas(),
                 loadTopVoltas(),
                 loadVoltasHistory(),
-                loadRankingGeral()
+                loadRankingGeral(),
+                loadTrackSummary(),
+                loadTrackRankings(),
+                loadTrackPilotRankings()
             ]).catch(error => {
                 console.error('Erro ao carregar dados do dashboard:', error);
             });
         }
 
-        function handleTrackFormSubmit(event) {
+        async function handleTrackFormSubmit(event) {
             event.preventDefault();
             const form = event.currentTarget;
             const pista = Number(form.dataset.pista);
@@ -724,221 +733,123 @@
                 return;
             }
 
-            const option = select.selectedOptions[0];
-            const corredorNome = option?.dataset?.nome || select.options[select.selectedIndex]?.text || 'Corredor';
-            const corredorEquipe = option?.dataset?.equipe || '';
-            const dataValue = dataInput && dataInput.value ? new Date(dataInput.value).toISOString() : new Date().toISOString();
+            const dataValue = dataInput && dataInput.value ? new Date(dataInput.value).toISOString() : null;
 
-            const trackData = getTrackData();
-            const track = trackData.find(item => item.pista === pista);
-            if (!track) {
-                showToast('Pista inválida.', 'error');
-                return;
+            try {
+                await postJSON('/voltas', {
+                    corredor_id: select.value,
+                    tempo,
+                    data: dataValue,
+                    pista
+                });
+
+                tempoInput.value = '';
+                if (dataInput) dataInput.value = '';
+                showToast(`Volta registrada na Pista ${pista}`, 'success');
+
+                await Promise.all([
+                    loadTotalVoltas(),
+                    loadVoltasHistory(),
+                    loadTopVoltas(),
+                    loadRankingGeral(),
+                    loadTrackSummary(),
+                    loadTrackRankings(),
+                    loadTrackPilotRankings()
+                ]);
+            } catch (error) {
+                showToast(error.message || 'Erro ao registrar volta', 'error');
             }
-
-            track.voltas.push({
-                id: Date.now().toString() + Math.random().toString(16).slice(2),
-                corredor_id: select.value,
-                nome: corredorNome,
-                equipe: corredorEquipe,
-                tempo,
-                data: dataValue
-            });
-
-            saveTrackData(trackData);
-            tempoInput.value = '';
-            if (dataInput) dataInput.value = '';
-            showToast(`Volta registrada na Pista ${pista}`, 'success');
-            refreshTrackSummaryUI();
         }
 
-        function refreshTrackSummaryUI() {
-            const trackData = getTrackData();
-            const totalVoltas = trackData.reduce((sum, track) => sum + track.voltas.length, 0);
-            const totalTempo = trackData.reduce((sum, track) => sum + track.voltas.reduce((trackSum, volta) => trackSum + (Number(volta.tempo) || 0), 0), 0);
+        async function loadTrackSummary() {
+            try {
+                const data = await fetchJSON('/voltas/summary');
+                const totalVoltas = Number(data.total_voltas || 0);
+                const totalTempo = Number(data.tempo_total || 0);
+                const totalVoltasElement = document.getElementById('pistaTotalVoltas');
+                const totalTempoElement = document.getElementById('pistaTempoTotal');
+                if (totalVoltasElement) totalVoltasElement.textContent = totalVoltas;
+                if (totalTempoElement) totalTempoElement.textContent = `${totalTempo.toFixed(2)}s`;
 
-            const totalVoltasElement = document.getElementById('pistaTotalVoltas');
-            const totalTempoElement = document.getElementById('pistaTempoTotal');
-            if (totalVoltasElement) totalVoltasElement.textContent = totalVoltas;
-            if (totalTempoElement) totalTempoElement.textContent = `${totalTempo.toFixed(2)}s`;
+                document.querySelectorAll('.track-card').forEach(card => {
+                    const pista = Number(card.dataset.pista);
+                    const track = Array.isArray(data.tracks) ? data.tracks.find(item => item.pista === pista) : null;
+                    const trackCount = track?.total_voltas || 0;
+                    const trackTotal = Number(track?.tempo_total || 0);
+                    const countElement = card.querySelector('.track-count');
+                    const totalElement = card.querySelector('.track-total');
+                    if (countElement) countElement.textContent = trackCount;
+                    if (totalElement) totalElement.textContent = `${trackTotal.toFixed(2)}s`;
+                });
 
-            document.querySelectorAll('.track-card').forEach(card => {
-                const pista = Number(card.dataset.pista);
-                const track = trackData.find(item => item.pista === pista);
-                const trackCount = track?.voltas.length || 0;
-                const trackTotal = track?.voltas.reduce((sum, volta) => sum + (Number(volta.tempo) || 0), 0) || 0;
-                const countElement = card.querySelector('.track-count');
-                const totalElement = card.querySelector('.track-total');
-                if (countElement) countElement.textContent = trackCount;
-                if (totalElement) totalElement.textContent = `${trackTotal.toFixed(2)}s`;
-            });
-
-            const summaryBody = document.getElementById('trackSummaryBody');
-            if (summaryBody) {
-                summaryBody.innerHTML = trackData.map(track => {
-                    const trackTotal = track.voltas.reduce((sum, volta) => sum + (Number(volta.tempo) || 0), 0);
-                    return `
+                const summaryBody = document.getElementById('trackSummaryBody');
+                if (summaryBody) {
+                    summaryBody.innerHTML = (Array.isArray(data.tracks) ? data.tracks : []).map(track => `
                         <tr>
                             <td>${track.pista}</td>
-                            <td>${track.voltas.length}</td>
-                            <td>${trackTotal.toFixed(2)}s</td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-
-            refreshTrackRankingUI(trackData);
-            refreshPilotRankingsUI(trackData);
-        }
-
-        function refreshTrackRankingUI(trackData) {
-            const tbody = document.getElementById('trackRankingBody');
-            if (!tbody) return;
-
-            const ranking = trackData
-                .map(track => {
-                    const totalTime = track.voltas.reduce((sum, volta) => sum + (Number(volta.tempo) || 0), 0);
-                    return {
-                        pista: track.pista,
-                        laps: track.voltas.length,
-                        totalTime,
-                        averageTime: track.voltas.length ? totalTime / track.voltas.length : 0
-                    };
-                })
-                .sort((a, b) => a.pista - b.pista);
-
-            if (ranking.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">Nenhuma volta registrada ainda</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = ranking.map(track => `
-                <tr>
-                    <td>${track.pista}</td>
-                    <td>Pista ${track.pista}</td>
-                    <td>${track.laps}</td>
-                    <td>${track.totalTime.toFixed(2)}s</td>
-                    <td>${track.averageTime.toFixed(2)}s</td>
-                </tr>
-            `).join('');
-        }
-
-        function getPilotRankings(trackData) {
-            const pilots = {};
-
-            trackData.forEach(track => {
-                track.voltas.forEach(volta => {
-                    const pilotKey = volta.corredor_id || volta.nome;
-                    if (!pilotKey) return;
-
-                    if (!pilots[pilotKey]) {
-                        pilots[pilotKey] = {
-                            id: volta.corredor_id || pilotKey,
-                            nome: volta.nome || `Piloto ${pilotKey}`,
-                            equipe: volta.equipe || 'Sem equipe',
-                            totalTime: 0,
-                            laps: 0,
-                            bestLap: Number.POSITIVE_INFINITY,
-                            tracks: {}
-                        };
-                    }
-
-                    const pilot = pilots[pilotKey];
-                    const tempo = Number(volta.tempo) || 0;
-                    pilot.totalTime += tempo;
-                    pilot.laps += 1;
-                    pilot.bestLap = Math.min(pilot.bestLap, tempo);
-
-                    if (!pilot.tracks[track.pista]) {
-                        pilot.tracks[track.pista] = {
-                            pista: track.pista,
-                            totalTime: 0,
-                            laps: 0,
-                            bestLap: Number.POSITIVE_INFINITY
-                        };
-                    }
-
-                    const trackPilot = pilot.tracks[track.pista];
-                    trackPilot.totalTime += tempo;
-                    trackPilot.laps += 1;
-                    trackPilot.bestLap = Math.min(trackPilot.bestLap, tempo);
-                });
-            });
-
-            const overall = Object.values(pilots).sort((a, b) => {
-                if (a.totalTime !== b.totalTime) return a.totalTime - b.totalTime;
-                if (b.laps !== a.laps) return b.laps - a.laps;
-                return a.bestLap - b.bestLap;
-            }).map((pilot, index) => ({
-                rank: index + 1,
-                ...pilot,
-                averageTime: pilot.laps ? pilot.totalTime / pilot.laps : 0
-            }));
-
-            const perTrack = Array.from({ length: 8 }, (_, index) => index + 1).reduce((obj, pista) => {
-                obj[pista] = [];
-                return obj;
-            }, {});
-
-            Object.values(pilots).forEach(pilot => {
-                Object.values(pilot.tracks).forEach(trackPilot => {
-                    perTrack[trackPilot.pista] = perTrack[trackPilot.pista] || [];
-                    perTrack[trackPilot.pista].push({
-                        nome: pilot.nome,
-                        equipe: pilot.equipe,
-                        totalTime: trackPilot.totalTime,
-                        laps: trackPilot.laps,
-                        bestLap: trackPilot.bestLap,
-                        averageTime: trackPilot.laps ? trackPilot.totalTime / trackPilot.laps : 0
-                    });
-                });
-            });
-
-            Object.keys(perTrack).forEach(pista => {
-                perTrack[pista].sort((a, b) => {
-                    if (a.totalTime !== b.totalTime) return a.totalTime - b.totalTime;
-                    if (b.laps !== a.laps) return b.laps - a.laps;
-                    return a.bestLap - b.bestLap;
-                });
-            });
-
-            return { overall, perTrack };
-        }
-
-        function refreshPilotRankingsUI(trackData) {
-            const rankings = getPilotRankings(trackData);
-            const overallBody = document.getElementById('pilotRankingBody');
-            const container = document.getElementById('trackPilotRankingsContainer');
-
-            if (overallBody) {
-                if (rankings.overall.length === 0) {
-                    overallBody.innerHTML = '<tr><td colspan="6">Nenhum piloto registrado ainda</td></tr>';
-                } else {
-                    overallBody.innerHTML = rankings.overall.map(pilot => `
-                        <tr>
-                            <td>${pilot.rank}</td>
-                            <td>${pilot.nome}</td>
-                            <td>${pilot.equipe}</td>
-                            <td>${pilot.laps}</td>
-                            <td>${pilot.totalTime.toFixed(2)}s</td>
-                            <td>${pilot.averageTime.toFixed(2)}s</td>
+                            <td>${track.total_voltas}</td>
+                            <td>${Number(track.tempo_total || 0).toFixed(2)}s</td>
                         </tr>
                     `).join('');
                 }
+            } catch (error) {
+                console.error('Erro ao carregar resumo de pistas:', error);
             }
+        }
 
-            if (container) {
-                container.innerHTML = Object.keys(rankings.perTrack).sort((a, b) => Number(a) - Number(b)).map(pista => {
-                    const pilots = rankings.perTrack[pista];
-                    const hasPilots = pilots && pilots.length > 0;
-                    const rows = hasPilots ? pilots.slice(0, 5).map((pilot, index) => `
+        async function loadTrackRankings() {
+            try {
+                const data = await fetchJSON('/voltas/summary');
+                const tracks = Array.isArray(data.tracks) ? data.tracks : [];
+                const sorted = [...tracks].sort((a, b) => {
+                    if (a.tempo_total !== b.tempo_total) return a.tempo_total - b.tempo_total;
+                    return b.total_voltas - a.total_voltas;
+                });
+
+                const tbody = document.getElementById('trackRankingBody');
+                if (!tbody) return;
+
+                if (sorted.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5">Nenhuma volta registrada ainda</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = sorted.map((track, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>Pista ${track.pista}</td>
+                        <td>${track.total_voltas}</td>
+                        <td>${Number(track.tempo_total || 0).toFixed(2)}s</td>
+                        <td>${track.total_voltas ? (track.tempo_total / track.total_voltas).toFixed(2) : '0.00'}s</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao carregar ranking de pistas:', error);
+            }
+        }
+
+        async function loadTrackPilotRankings() {
+            try {
+                const data = await fetchJSON('/voltas/ranking/pistas');
+                const container = document.getElementById('trackPilotRankingsContainer');
+                if (!container) return;
+
+                if (!data || !data.ranking) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); margin: 0;">Os rankings de pilotos por pista serão exibidos aqui quando as voltas forem registradas.</p>';
+                    return;
+                }
+
+                const tracks = Object.keys(data.ranking).sort((a, b) => Number(a) - Number(b));
+                container.innerHTML = tracks.map(pista => {
+                    const pilots = data.ranking[pista] || [];
+                    const rows = pilots.length ? pilots.slice(0, 5).map((pilot, index) => `
                         <tr>
                             <td>${index + 1}</td>
                             <td>${pilot.nome}</td>
                             <td>${pilot.equipe}</td>
-                            <td>${pilot.laps}</td>
-                            <td>${pilot.totalTime.toFixed(2)}s</td>
-                            <td>${pilot.averageTime.toFixed(2)}s</td>
+                            <td>${pilot.total_voltas}</td>
+                            <td>${Number(pilot.tempo_total || 0).toFixed(2)}s</td>
+                            <td>${pilot.total_voltas ? (pilot.tempo_total / pilot.total_voltas).toFixed(2) : '0.00'}s</td>
                         </tr>
                     `).join('') : `
                         <tr>
@@ -969,6 +880,8 @@
                         </div>
                     `;
                 }).join('');
+            } catch (error) {
+                console.error('Erro ao carregar rankings de pilotos por pista:', error);
             }
         }
 
