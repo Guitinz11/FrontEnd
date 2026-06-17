@@ -154,7 +154,7 @@
 
                     <div class="card">
                         <div class="card-header">
-                            <h2>🏁 Ranking das 8 Pistas</h2>
+                            <h2>🏁 Ranking das 9 Pistas</h2>
                         </div>
                         <div class="card-body">
                             <table class="ranking-table">
@@ -385,6 +385,18 @@
                             <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
                         </div>
                     </div>
+                    <div class="card track-card" data-pista="9">
+                        <div class="card-header"><h2>Pista 9</h2></div>
+                        <div class="card-body">
+                            <form class="track-volta-form" data-pista="9">
+                                <div class="form-group"><label>Corredor</label><select class="corredor-select" required><option value="">Selecione o corredor</option></select></div>
+                                <div class="form-group"><label>Tempo (s)</label><input type="number" class="tempo-input" placeholder="Ex: 72.34" step="0.01" min="0.01" required></div>
+                                <div class="form-group"><label>Data / Hora</label><input type="datetime-local" class="data-input"></div>
+                                <button type="submit" class="btn btn-primary btn-full">Registrar Volta</button>
+                            </form>
+                            <div class="track-summary"><div class="summary-row"><span>Total de Voltas:</span> <strong class="track-count">0</strong></div><div class="summary-row"><span>Tempo Total:</span> <strong class="track-total">0.00s</strong></div></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="card">
@@ -424,6 +436,7 @@
                                     <tr><td>6</td><td>0</td><td>0.00s</td></tr>
                                     <tr><td>7</td><td>0</td><td>0.00s</td></tr>
                                     <tr><td>8</td><td>0</td><td>0.00s</td></tr>
+                                    <tr><td>9</td><td>0</td><td>0.00s</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -476,6 +489,7 @@
     <script src="script.js"></script>
     <script>
         const API_URL = 'http://localhost:3000';
+        const TRACK_COUNT = 9;
 
         document.addEventListener('DOMContentLoaded', function() {
             try {
@@ -787,13 +801,18 @@
 
                 const summaryBody = document.getElementById('trackSummaryBody');
                 if (summaryBody) {
-                    summaryBody.innerHTML = (Array.isArray(data.tracks) ? data.tracks : []).map(track => `
+                    const tracks = Array.isArray(data.tracks) ? data.tracks : [];
+                    summaryBody.innerHTML = Array.from({ length: TRACK_COUNT }, (_, index) => {
+                        const pista = index + 1;
+                        const track = tracks.find(item => Number(item.pista) === pista);
+                        return `
                         <tr>
-                            <td>${track.pista}</td>
-                            <td>${track.total_voltas}</td>
-                            <td>${Number(track.tempo_total || 0).toFixed(2)}s</td>
+                            <td>${pista}</td>
+                            <td>${track?.total_voltas || 0}</td>
+                            <td>${Number(track?.tempo_total || 0).toFixed(2)}s</td>
                         </tr>
-                    `).join('');
+                    `;
+                    }).join('');
                 }
             } catch (error) {
                 console.error('Erro ao carregar resumo de pistas:', error);
@@ -804,7 +823,14 @@
             try {
                 const data = await fetchJSON('/voltas/summary');
                 const tracks = Array.isArray(data.tracks) ? data.tracks : [];
-                const sorted = [...tracks].sort((a, b) => {
+                const completeTracks = Array.from({ length: TRACK_COUNT }, (_, index) => {
+                    const pista = index + 1;
+                    const track = tracks.find(item => Number(item.pista) === pista);
+                    return track || { pista, total_voltas: 0, tempo_total: 0, media: 0 };
+                });
+                const sorted = completeTracks.sort((a, b) => {
+                    if (!a.total_voltas && b.total_voltas) return 1;
+                    if (a.total_voltas && !b.total_voltas) return -1;
                     if (a.tempo_total !== b.tempo_total) return a.tempo_total - b.tempo_total;
                     return b.total_voltas - a.total_voltas;
                 });
@@ -812,15 +838,13 @@
                 const tbody = document.getElementById('trackRankingBody');
                 if (!tbody) return;
 
-                if (sorted.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5">Nenhuma volta registrada ainda</td></tr>';
-                    return;
-                }
-
                 tbody.innerHTML = sorted.map((track, index) => `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>Pista ${track.pista}</td>
+                    <tr class="${Number(track.pista) === 9 ? 'special-ranking-row' : ''}">
+                        <td><span class="ranking-position">${index + 1}</span></td>
+                        <td>
+                            <strong>Pista ${track.pista}</strong>
+                            ${Number(track.pista) === 9 ? '<span class="special-track-label">Especial</span>' : ''}
+                        </td>
                         <td>${track.total_voltas}</td>
                         <td>${Number(track.tempo_total || 0).toFixed(2)}s</td>
                         <td>${track.total_voltas ? (track.tempo_total / track.total_voltas).toFixed(2) : '0.00'}s</td>
@@ -833,7 +857,10 @@
 
         async function loadTrackPilotRankings() {
             try {
-                const data = await fetchJSON('/voltas/ranking/pistas');
+                const [data, specialData] = await Promise.all([
+                    fetchJSON('/voltas/ranking/pistas'),
+                    fetchJSON('/voltas/ranking/pista-9').catch(() => null)
+                ]);
                 const container = document.getElementById('trackPilotRankingsContainer');
                 if (!container) return;
 
@@ -842,17 +869,18 @@
                     return;
                 }
 
-                const tracks = Object.keys(data.ranking).sort((a, b) => Number(a) - Number(b));
+                const tracks = Array.from({ length: TRACK_COUNT }, (_, index) => String(index + 1));
                 container.innerHTML = tracks.map(pista => {
-                    const pilots = data.ranking[pista] || [];
+                    const isSpecial = Number(pista) === 9;
+                    const pilots = isSpecial && specialData?.ranking ? specialData.ranking : (data.ranking[pista] || []);
                     const rows = pilots.length ? pilots.slice(0, 5).map((pilot, index) => `
-                        <tr>
-                            <td>${index + 1}</td>
+                        <tr class="${isSpecial ? 'special-ranking-row' : ''}">
+                            <td><span class="ranking-position">${index + 1}</span></td>
                             <td>${pilot.nome}</td>
                             <td>${pilot.equipe}</td>
                             <td>${pilot.total_voltas}</td>
                             <td>${Number(pilot.tempo_total || 0).toFixed(2)}s</td>
-                            <td>${pilot.total_voltas ? (pilot.tempo_total / pilot.total_voltas).toFixed(2) : '0.00'}s</td>
+                            <td>${Number(pilot.media || (pilot.total_voltas ? pilot.tempo_total / pilot.total_voltas : 0)).toFixed(2)}s</td>
                         </tr>
                     `).join('') : `
                         <tr>
@@ -861,8 +889,11 @@
                     `;
 
                     return `
-                        <div class="track-pilot-table-card">
-                            <h3>Pista ${pista} - Top Pilotos</h3>
+                        <div class="track-pilot-table-card ${isSpecial ? 'ranking-special-card' : ''}">
+                            <div class="special-ranking-heading">
+                                <h3>${isSpecial ? 'Pista 9 - Ranking Especial' : `Pista ${pista} - Top Pilotos`}</h3>
+                                ${isSpecial ? '<span>Menor melhor volta, média forte e bônus por voltas</span>' : ''}
+                            </div>
                             <div class="table-responsive">
                                 <table class="ranking-table">
                                     <thead>

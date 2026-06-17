@@ -1771,13 +1771,27 @@ body {
 
 .track-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
 .track-card {
     min-height: 340px;
+    min-width: 0;
+}
+
+.track-volta-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.track-volta-form .form-group,
+.track-volta-form input,
+.track-volta-form select,
+.track-volta-form button {
+    min-width: 0;
+    width: 100%;
 }
 
 .track-summary {
@@ -3116,11 +3130,107 @@ body {
     border-bottom: 1px solid rgba(123, 47, 255, 0.1);
 }
 
+.ranking-position {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid rgba(34, 211, 238, 0.34);
+    background: rgba(34, 211, 238, 0.08);
+    color: #dffcff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    box-shadow: inset 0 0 14px rgba(34, 211, 238, 0.12);
+}
+
+.ranking-table tbody tr:nth-child(1) .ranking-position,
+.admin-table tbody tr:nth-child(1) .ranking-position {
+    border-color: rgba(251, 191, 36, 0.72);
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.28), rgba(34, 211, 238, 0.08));
+    color: #fff1b8;
+    box-shadow: 0 0 22px rgba(251, 191, 36, 0.22);
+}
+
+.ranking-table tbody tr:nth-child(2) .ranking-position,
+.admin-table tbody tr:nth-child(2) .ranking-position {
+    border-color: rgba(226, 232, 240, 0.58);
+    background: rgba(226, 232, 240, 0.12);
+    color: #f8fafc;
+}
+
+.ranking-table tbody tr:nth-child(3) .ranking-position,
+.admin-table tbody tr:nth-child(3) .ranking-position {
+    border-color: rgba(205, 127, 50, 0.62);
+    background: rgba(205, 127, 50, 0.14);
+    color: #ffd8a8;
+}
+
 .data-table tbody tr:hover,
 .ranking-table tbody tr:hover,
 .admin-table tbody tr:hover {
     background: rgba(123, 47, 255, 0.11);
     transform: scale(1.003);
+}
+
+.special-ranking-row {
+    background: linear-gradient(90deg, rgba(251, 191, 36, 0.08), rgba(34, 211, 238, 0.04), transparent);
+}
+
+.special-track-label,
+.special-track-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.5rem;
+    margin-left: 0.55rem;
+    padding: 0.12rem 0.5rem;
+    border: 1px solid rgba(251, 191, 36, 0.42);
+    background: rgba(251, 191, 36, 0.1);
+    color: #fde68a;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+}
+
+.ranking-special-card {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(251, 191, 36, 0.48) !important;
+    background:
+        linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(34, 211, 238, 0.06) 44%, rgba(5, 5, 10, 0.88)),
+        rgba(5, 5, 10, 0.9) !important;
+    box-shadow: 0 22px 70px rgba(251, 191, 36, 0.12), 0 18px 60px rgba(0, 0, 0, 0.36) !important;
+}
+
+.ranking-special-card::before {
+    background: linear-gradient(90deg, #fbbf24, #22d3ee, transparent) !important;
+}
+
+.special-ranking-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.special-ranking-heading h3 {
+    margin-bottom: 0;
+}
+
+.special-ranking-heading span,
+.special-track-copy {
+    color: #fde68a;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    text-transform: uppercase;
+}
+
+.special-track-copy {
+    margin: 0.25rem 0 0;
+    color: #c7f9ff;
 }
 
 .badge {
@@ -3655,5 +3765,409 @@ body {
     .btn {
         justify-content: center;
         width: 100%;
+    }
+}
+
+/* ===========================
+   ANIMATION LAYER
+   =========================== */
+:root {
+    --cursor-x: 50vw;
+    --cursor-y: 50vh;
+}
+
+.container-home::before,
+.container-auth::before,
+.container-dashboard::before {
+    animation: gridDrift 13s linear infinite, gridPulse 5s ease-in-out infinite;
+}
+
+.container-home::after,
+.container-auth::after,
+.container-dashboard::after {
+    animation: ambientSweep 8s ease-in-out infinite;
+}
+
+.home-glow-main {
+    animation: glowSweep 5s ease-in-out infinite, colorPulse 7s ease-in-out infinite;
+}
+
+.home-glow-track {
+    animation: trackSlide 4.2s ease-in-out infinite, neonBlink 2.8s ease-in-out infinite;
+}
+
+.motion-glow {
+    position: fixed;
+    left: var(--cursor-x);
+    top: var(--cursor-y);
+    z-index: 2;
+    width: 340px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, rgba(34, 211, 238, 0.13), transparent 58%),
+        radial-gradient(circle, rgba(251, 191, 36, 0.06), transparent 68%);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.86);
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    mix-blend-mode: screen;
+}
+
+.motion-glow.is-active {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.home-logo img,
+.brand-logo img,
+.navbar-logo img {
+    animation: navLogoPulse 3.4s ease-in-out infinite;
+}
+
+.home-logo .logo-text,
+.brand-logo .logo-text {
+    animation: textGlow 4.2s ease-in-out infinite;
+}
+
+.container-home .nav-link,
+.sidebar-menu a,
+.tab-btn {
+    transition: color 0.25s ease, transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.container-home .nav-link:hover,
+.sidebar-menu a:hover,
+.tab-btn:hover {
+    transform: translateY(-2px);
+    text-shadow: 0 0 18px rgba(34, 211, 238, 0.42);
+}
+
+.hero-badge,
+.hero-telemetry span,
+.section-kicker {
+    animation: neonBlink 3.6s ease-in-out infinite;
+}
+
+.section-heading h2,
+.form-header h1,
+.dashboard-header h1,
+.section-header h1,
+.section-header h2 {
+    animation: headingLift 0.8s ease both, textGlow 4.8s ease-in-out infinite;
+}
+
+.btn,
+.tab-btn,
+.sidebar-menu a {
+    overflow: hidden;
+    position: relative;
+}
+
+.btn::after,
+.tab-btn::after,
+.sidebar-menu a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 0 28%, rgba(255, 255, 255, 0.2) 45%, transparent 62% 100%);
+    opacity: 0;
+    transform: translateX(-120%) skewX(-14deg);
+    pointer-events: none;
+}
+
+.btn:hover::after,
+.tab-btn:hover::after,
+.sidebar-menu a:hover::after {
+    animation: shinePass 0.72s ease;
+}
+
+.btn:hover,
+.tab-btn:hover {
+    box-shadow: 0 0 34px rgba(34, 211, 238, 0.2), 0 0 24px rgba(123, 47, 255, 0.2);
+}
+
+.stat-card,
+.driver-card,
+.identity-card,
+.analytics-insight-card,
+.track-card,
+.track-pilot-table-card,
+.ranking-track-card,
+.card,
+.auth-form,
+.modal-content,
+.dashboard-header,
+.section-header,
+.video-frame {
+    transform-style: preserve-3d;
+    animation: panelIdle 6s ease-in-out infinite;
+}
+
+.stat-card:hover,
+.driver-card:hover,
+.identity-card:hover,
+.analytics-insight-card:hover,
+.track-card:hover,
+.track-pilot-table-card:hover,
+.ranking-track-card:hover,
+.card:hover,
+.auth-form:hover,
+.video-frame:hover {
+    animation-play-state: paused;
+    transform: translateY(-7px) scale(1.012);
+}
+
+.stat-card::before,
+.driver-card::before,
+.identity-card::before,
+.analytics-insight-card::after,
+.track-card::after,
+.card::before,
+.auth-form::before,
+.modal-content::before {
+    animation: edgeScan 3.8s ease-in-out infinite;
+}
+
+.driver-number,
+.stat-card strong,
+.stat-value,
+.stat-number,
+.rank-time,
+.analytics-insight-card em {
+    animation: numberGlow 3.8s ease-in-out infinite;
+}
+
+.driver-tags span,
+.badge,
+.track-summary,
+.user-badge,
+.rank-badge {
+    animation: chipFloat 4.6s ease-in-out infinite;
+}
+
+.form-group input,
+.form-group select,
+.search-input {
+    background-size: 220% 100%;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.search-input:focus {
+    animation: inputFocusPulse 1.2s ease-in-out infinite;
+}
+
+.data-table tbody tr,
+.ranking-table tbody tr,
+.admin-table tbody tr {
+    animation: rowSettle 0.6s ease both;
+}
+
+.data-table tbody tr:hover,
+.ranking-table tbody tr:hover,
+.admin-table tbody tr:hover {
+    transform: translateX(5px) scale(1.004);
+}
+
+.modal.active .modal-content {
+    animation: modalPop 0.36s ease both;
+}
+
+.toast {
+    animation: toastFloat 3s ease-in-out infinite;
+}
+
+.reveal-on-scroll {
+    transform: translateY(34px) scale(0.985);
+    transition:
+        opacity 0.72s ease var(--reveal-delay, 0ms),
+        transform 0.72s cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0ms);
+}
+
+.reveal-on-scroll.is-visible {
+    transform: translateY(0) scale(1);
+}
+
+@keyframes gridPulse {
+    0%, 100% {
+        opacity: 0.55;
+    }
+    50% {
+        opacity: 0.88;
+    }
+}
+
+@keyframes ambientSweep {
+    0%, 100% {
+        filter: hue-rotate(0deg) brightness(1);
+    }
+    50% {
+        filter: hue-rotate(18deg) brightness(1.12);
+    }
+}
+
+@keyframes colorPulse {
+    0%, 100% {
+        filter: hue-rotate(0deg) saturate(1);
+    }
+    50% {
+        filter: hue-rotate(28deg) saturate(1.32);
+    }
+}
+
+@keyframes neonBlink {
+    0%, 100% {
+        opacity: 0.82;
+        text-shadow: 0 0 0 rgba(34, 211, 238, 0);
+    }
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 18px rgba(34, 211, 238, 0.42);
+    }
+}
+
+@keyframes navLogoPulse {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+        filter: drop-shadow(0 0 18px rgba(139, 92, 246, 0.65));
+    }
+    50% {
+        transform: translateY(-2px) scale(1.05);
+        filter: drop-shadow(0 0 26px rgba(34, 211, 238, 0.58));
+    }
+}
+
+@keyframes textGlow {
+    0%, 100% {
+        text-shadow: 0 0 0 rgba(34, 211, 238, 0);
+    }
+    50% {
+        text-shadow: 0 0 22px rgba(34, 211, 238, 0.32), 0 0 12px rgba(157, 80, 255, 0.25);
+    }
+}
+
+@keyframes headingLift {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shinePass {
+    0% {
+        opacity: 0;
+        transform: translateX(-120%) skewX(-14deg);
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(120%) skewX(-14deg);
+    }
+}
+
+@keyframes panelIdle {
+    0%, 100% {
+        translate: 0 0;
+    }
+    50% {
+        translate: 0 -3px;
+    }
+}
+
+@keyframes edgeScan {
+    0%, 100% {
+        opacity: 0.45;
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        opacity: 1;
+        filter: hue-rotate(34deg);
+    }
+}
+
+@keyframes numberGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 0 rgba(34, 211, 238, 0));
+    }
+    50% {
+        filter: drop-shadow(0 0 16px rgba(34, 211, 238, 0.35));
+    }
+}
+
+@keyframes chipFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+@keyframes inputFocusPulse {
+    0%, 100% {
+        box-shadow: 0 0 22px rgba(123, 47, 255, 0.32);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(34, 211, 238, 0.32);
+    }
+}
+
+@keyframes rowSettle {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes modalPop {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes toastFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+}
+
+@media (max-width: 768px) {
+    .motion-glow {
+        display: none;
+    }
+
+    .stat-card,
+    .driver-card,
+    .identity-card,
+    .analytics-insight-card,
+    .track-card,
+    .track-pilot-table-card,
+    .ranking-track-card,
+    .card,
+    .auth-form,
+    .modal-content,
+    .dashboard-header,
+    .section-header,
+    .video-frame {
+        animation-duration: 8s;
     }
 }

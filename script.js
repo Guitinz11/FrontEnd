@@ -81,7 +81,15 @@ document.addEventListener('DOMContentLoaded', function() {
         .dashboard-header,
         .section-header,
         .card,
-        .analytics-insight-card
+        .analytics-insight-card,
+        .track-card,
+        .track-pilot-table-card,
+        .ranking-track-card,
+        .data-table,
+        .ranking-table,
+        .admin-table,
+        .form-group,
+        .btn
     `);
 
     if ('IntersectionObserver' in window) {
@@ -97,12 +105,26 @@ document.addEventListener('DOMContentLoaded', function() {
             rootMargin: '0px 0px -60px 0px'
         });
 
-        revealTargets.forEach(target => {
+        revealTargets.forEach((target, index) => {
             target.classList.add('reveal-on-scroll');
+            target.style.setProperty('--reveal-delay', `${Math.min(index % 10, 9) * 55}ms`);
             revealObserver.observe(target);
         });
     } else {
         revealTargets.forEach(target => target.classList.add('is-visible'));
+    }
+
+    // Brilho suave acompanhando o ponteiro
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const motionGlow = document.createElement('div');
+        motionGlow.className = 'motion-glow';
+        document.body.appendChild(motionGlow);
+
+        window.addEventListener('pointermove', debounce((event) => {
+            document.documentElement.style.setProperty('--cursor-x', `${event.clientX}px`);
+            document.documentElement.style.setProperty('--cursor-y', `${event.clientY}px`);
+            motionGlow.classList.add('is-active');
+        }, 8));
     }
 
     // Atualiza o item ativo do menu da home ao navegar por seções internas
