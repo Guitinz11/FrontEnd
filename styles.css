@@ -280,7 +280,8 @@ body {
 }
 
 .container-home .hero-content {
-    gap: clamp(2rem, 6vw, 5rem);
+    grid-template-columns: minmax(0, 0.88fr) minmax(360px, 1.12fr);
+    gap: clamp(2rem, 7vw, 6rem);
 }
 
 .container-home .hero-text {
@@ -407,9 +408,11 @@ body {
 }
 
 .container-home .hero-visual {
-    min-height: 470px;
+    min-height: 540px;
     isolation: isolate;
-    animation: softFloat 6s ease-in-out infinite;
+    justify-content: flex-end;
+    transform: translateX(clamp(-0.35rem, 1.4vw, 1.15rem));
+    animation: logoStageFloat 5.2s ease-in-out infinite;
 }
 
 .neon-circle {
@@ -459,22 +462,23 @@ body {
 }
 
 .ring-outer {
-    width: min(420px, 78vw);
-    height: min(420px, 78vw);
-    animation: pulse 5s ease-in-out infinite;
+    width: min(650px, 88vw);
+    height: min(650px, 88vw);
+    animation: pulse 3.6s ease-in-out infinite, spinSlow 17s linear infinite, ringFlicker 2.15s ease-in-out infinite;
 }
 
 .ring-middle {
-    width: min(310px, 58vw);
-    height: min(310px, 58vw);
+    width: min(500px, 72vw);
+    height: min(500px, 72vw);
     border-style: dashed;
-    animation: spinSlow 20s linear infinite;
+    animation: spinSlow 10s linear infinite reverse, ringFlicker 2.55s ease-in-out infinite;
 }
 
 .ring-inner {
-    width: min(190px, 38vw);
-    height: min(190px, 38vw);
+    width: min(340px, 52vw);
+    height: min(340px, 52vw);
     background: radial-gradient(circle, rgba(123, 47, 255, 0.24), transparent 64%);
+    animation: ringSpark 2.25s ease-in-out infinite, spinSlow 13s linear infinite;
 }
 
 .hero-logo-card {
@@ -482,13 +486,13 @@ body {
     z-index: 2;
     display: grid;
     place-items: center;
-    width: min(230px, 48vw);
+    width: min(430px, 68vw);
     aspect-ratio: 1;
     border: 1px solid rgba(157, 80, 255, 0.45);
     border-radius: 50%;
     background: rgba(5, 5, 10, 0.78);
-    box-shadow: 0 0 55px rgba(123, 47, 255, 0.42);
-    animation: logoBreath 4.8s ease-in-out infinite;
+    box-shadow: 0 0 74px rgba(123, 47, 255, 0.48);
+    animation: logoBreath 2.9s ease-in-out infinite, logoTilt 4.5s ease-in-out infinite, logoNudge 2.15s ease-in-out infinite, logoAuraPop 3.4s ease-in-out infinite;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
@@ -502,22 +506,31 @@ body {
 .hero-logo-card::after {
     content: '';
     position: absolute;
-    inset: -20px;
+    inset: -28px;
     border: 1px solid rgba(139, 92, 246, 0.14);
     border-radius: 50%;
 }
 
 .hero-logo-card::after {
-    inset: 24px;
+    inset: 30px;
     border-color: rgba(240, 238, 255, 0.08);
 }
 
+.hero-logo-card::before {
+    animation: scanOrbit 2.8s linear infinite, ringFlicker 2.1s ease-in-out infinite;
+}
+
+.hero-logo-card::after {
+    animation: scanOrbit 4s linear reverse infinite, ringFlicker 2.45s ease-in-out infinite;
+}
+
 .hero-logo-card img {
-    width: 72%;
-    height: 72%;
+    width: 76%;
+    height: 76%;
     border-radius: 50%;
     object-fit: cover;
     filter: drop-shadow(0 0 24px rgba(157, 80, 255, 0.7));
+    animation: logoFlash 2s ease-in-out infinite, logoPulseZoom 3.2s ease-in-out infinite, logoMicroSpin 7s ease-in-out infinite;
 }
 
 .home-glow {
@@ -852,12 +865,119 @@ body {
     }
 }
 
-@keyframes logoBreath {
+@keyframes logoStageFloat {
     0%, 100% {
-        box-shadow: 0 0 55px rgba(123, 47, 255, 0.42);
+        transform: translateX(clamp(-0.35rem, 1.4vw, 1.15rem)) translateY(0) rotate(0deg);
     }
     50% {
-        box-shadow: 0 0 76px rgba(157, 80, 255, 0.58);
+        transform: translateX(clamp(0rem, 2vw, 1.6rem)) translateY(-14px) rotate(1.5deg);
+    }
+}
+
+@keyframes logoBreath {
+    0%, 100% {
+        box-shadow: 0 0 70px rgba(123, 47, 255, 0.5), 0 0 34px rgba(34, 211, 238, 0.18);
+    }
+    50% {
+        box-shadow: 0 0 104px rgba(157, 80, 255, 0.7), 0 0 58px rgba(34, 211, 238, 0.34);
+    }
+}
+
+@keyframes logoTilt {
+    0%, 100% {
+        rotate: 0deg;
+    }
+    35% {
+        rotate: -3.2deg;
+    }
+    70% {
+        rotate: 3deg;
+    }
+}
+
+@keyframes logoFlash {
+    0%, 100% {
+        filter: drop-shadow(0 0 28px rgba(157, 80, 255, 0.78)) saturate(1.04);
+    }
+    50% {
+        filter: drop-shadow(0 0 50px rgba(34, 211, 238, 0.94)) saturate(1.36);
+    }
+}
+
+@keyframes logoNudge {
+    0%, 100% {
+        translate: 0 0;
+    }
+    45% {
+        translate: -7px -4px;
+    }
+    72% {
+        translate: 5px 2px;
+    }
+}
+
+@keyframes logoPulseZoom {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.075);
+    }
+}
+
+@keyframes logoAuraPop {
+    0%, 100% {
+        outline: 0 solid rgba(34, 211, 238, 0);
+    }
+    45% {
+        outline: 12px solid rgba(34, 211, 238, 0.055);
+    }
+    70% {
+        outline: 4px solid rgba(157, 80, 255, 0.12);
+    }
+}
+
+@keyframes logoMicroSpin {
+    0%, 100% {
+        rotate: 0deg;
+    }
+    30% {
+        rotate: -1.8deg;
+    }
+    66% {
+        rotate: 2.2deg;
+    }
+}
+
+@keyframes ringSpark {
+    0%, 100% {
+        opacity: 0.72;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.18);
+    }
+}
+
+@keyframes ringFlicker {
+    0%, 100% {
+        opacity: 0.72;
+        box-shadow: inset 0 0 28px rgba(139, 92, 246, 0.14), 0 0 28px rgba(139, 92, 246, 0.18);
+    }
+    40% {
+        opacity: 1;
+        box-shadow: inset 0 0 34px rgba(34, 211, 238, 0.18), 0 0 42px rgba(34, 211, 238, 0.24);
+    }
+    62% {
+        opacity: 0.84;
+        box-shadow: inset 0 0 30px rgba(157, 80, 255, 0.2), 0 0 36px rgba(157, 80, 255, 0.28);
+    }
+}
+
+@keyframes scanOrbit {
+    to {
+        transform: rotate(360deg);
     }
 }
 
@@ -2214,6 +2334,9 @@ body {
 
     .container-home .hero-visual {
         min-height: 360px;
+        justify-content: center;
+        transform: none;
+        animation: softFloat 6s ease-in-out infinite;
     }
 
     .auth-wrapper {
